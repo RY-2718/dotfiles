@@ -6,7 +6,7 @@ set nocompatible
 filetype off            " for NeoBundle
 
 if has('vim_starting')
-    set rtp+=$HOME/.vim/bundle/neobundle.vim/
+    set rtp+=$HOME/.vim/neobundle.vim/
 endif
 call neobundle#begin(expand('~/.vim/bundle'))
 NeoBundleFetch 'Shougo/neobundle.vim'
