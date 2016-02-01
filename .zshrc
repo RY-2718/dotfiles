@@ -60,3 +60,5 @@ alias braban='wine C:\\Program\ Files\\YUZUSOFT\\ぶらばん！\\ぶらばん�
 alias sshjikken='ssh j132441r@131.113.100.213'
 echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"
 function chpwd() { echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
+
+echo "~/.zshrc"
