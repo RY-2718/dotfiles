@@ -56,6 +56,7 @@ set background=dark
 colorscheme hybrid
 syntax enable
 
+" history
 :set undodir=$HOME/.vim_history/undo
 :set backupdir=$HOME/.vim_history/tmp
 
