@@ -5,7 +5,6 @@ fi
 
 # private
 eval "$(rbenv init -)"
-export PATH="/Applications/Macvim.app/Contents/MacOS:$PATH"
 
 # Source local file.
 if [[ -s "$HOME/.zprofile.local" ]]; then
