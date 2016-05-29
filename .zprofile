@@ -4,6 +4,7 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/runcoms/zprofile" ]]; then
 fi
 
 # private
+export PATH=$HOME/.rbenv/bin:$PATH
 eval "$(rbenv init -)"
 
 # Source local file.
