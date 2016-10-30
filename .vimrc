@@ -26,6 +26,11 @@ NeoBundle 'Shougo/vimproc.vim', {
             \     'unix' : 'gmake',
             \    },
             \ }
+NeoBundle 'mattn/emmet-vim'
+NeoBundle 'tpope/surround.vim'
+NeoBundle 'pangloss/vim-javascript'
+NeoBundle 'nathanaelkane/vim-indent-guides'
+NeoBundle 'jelera/vim-javascript-syntax'
 call neobundle#end()
 filetype plugin indent on       " restore filetype
 
@@ -61,3 +66,4 @@ syntax enable
 :set backupdir=$HOME/.vim_history/tmp
 
 autocmd FileType text setlocal textwidth=0
+autocmd FileType rb setlocal textwidth=108

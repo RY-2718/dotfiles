@@ -21,8 +21,8 @@ alias la='ls -al'
 
 # History
 export HISTFILE=${HOME}/.zsh_history
-export HISTSIZE=1000
-export SAVEHIST=100000
+export HISTSIZE=100000000
+export SAVEHIST=100000000
 setopt hist_ignore_all_dups
 setopt share_history
 setopt EXTENDED_HISTORY
