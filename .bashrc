@@ -11,9 +11,10 @@ function cdls() {
     ls;
 }
 
-alias vba_m='wine ~/Dropbox/GBA/VisualBoyAdvanceM1206/VisualBoyAdvance-M.exe'
-alias gba='vba_m'
 alias showhidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
 alias unshowhidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
-#alias logbook='~/applications/logbook/logbook.sh'
-alias braban='wine C:\\Program\ Files\\YUZUSOFT\\ぶらばん！\\ぶらばん！.exe'
+
+# Source local file.
+if [[ -s "$HOME/.bashrc.local" ]]; then
+    source "$HOME/.bashrc.local"
+fi
