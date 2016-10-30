@@ -21,8 +21,8 @@ alias la='ls -al'
 
 # History
 export HISTFILE=${HOME}/.zsh_history
-export HISTSIZE=1000
-export SAVEHIST=100000
+export HISTSIZE=100000000
+export SAVEHIST=100000000
 setopt hist_ignore_all_dups
 setopt share_history
 setopt EXTENDED_HISTORY
@@ -49,7 +49,6 @@ alias vim='env_LANG=ja_JP.UTF-8 /Applications/MacVim.app/Contents/MacOS/Vim'
 #alias vim='mvim -v'
 
 #personal
-alias sshua='ssh ua332994@logex02.educ.cc.keio.ac.jp'
 alias sshsirius='ssh ex1494@sirius.am.ics.keio.ac.jp'
 alias showhidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
 alias unshowhidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
