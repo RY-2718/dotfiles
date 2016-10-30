@@ -11,7 +11,6 @@ function cdls() {
     ls;
 }
 
-alias sshua='ssh ua332994@logex02.educ.cc.keio.ac.jp'
 alias sshsirius='ssh ex1494@sirius.am.ics.keio.ac.jp'
 alias vba_m='wine ~/Dropbox/GBA/VisualBoyAdvanceM1206/VisualBoyAdvance-M.exe'
 alias gba='vba_m'
