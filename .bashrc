@@ -11,11 +11,10 @@ function cdls() {
     ls;
 }
 
-alias sshsirius='ssh ex1494@sirius.am.ics.keio.ac.jp'
-alias vba_m='wine ~/Dropbox/GBA/VisualBoyAdvanceM1206/VisualBoyAdvance-M.exe'
-alias gba='vba_m'
 alias showhidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
 alias unshowhidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
-#alias logbook='~/applications/logbook/logbook.sh'
-alias braban='wine C:\\Program\ Files\\YUZUSOFT\\ぶらばん！\\ぶらばん！.exe'
-alias sshjikken='ssh j132441r@131.113.100.213'
+
+# Source local file.
+if [[ -s "$HOME/.bashrc.local" ]]; then
+    source "$HOME/.bashrc.local"
+fi

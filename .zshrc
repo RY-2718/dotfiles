@@ -49,10 +49,8 @@ alias vim='env_LANG=ja_JP.UTF-8 /Applications/MacVim.app/Contents/MacOS/Vim'
 #alias vim='mvim -v'
 
 #personal
-alias sshsirius='ssh ex1494@sirius.am.ics.keio.ac.jp'
 alias showhidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
 alias unshowhidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
-alias sshjikken='ssh j132441r@131.113.100.213'
 echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"
 function chpwd() { echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 
