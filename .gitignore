@@ -3,3 +3,4 @@
 *.swp
 .vim/bundle
 .vim/.netrwhist
+iterm2/com.googlecode.iterm2.plist
