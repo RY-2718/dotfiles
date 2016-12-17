@@ -45,7 +45,7 @@ setopt nonomatch
 
 #vim
 #alias vi=vim
-alias vim='env_LANG=ja_JP.UTF-8 /Applications/MacVim.app/Contents/MacOS/Vim'
+#alias vim='env_LANG=ja_JP.UTF-8 /Applications/MacVim.app/Contents/MacOS/Vim'
 #alias vim='mvim -v'
 
 #personal
