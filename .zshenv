@@ -3,4 +3,4 @@
 #   source "${ZDOTDIR:-$HOME}/.zprezto/runcoms/zshenv"
 # fi
 
-echo "./zshenv"
+echo "~/.zshenv"
