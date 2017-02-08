@@ -5,4 +5,8 @@ fi
 export PATH
 export CLICOLOR=1
 eval "$(rbenv init -)"
-export PATH="/usr/local/sbin:/Applications/Macvim.app/Contents/MacOS:$PATH"
+
+# Source local file.
+if [[ -s "$HOME/.bash_profile.local" ]]; then
+    source "$HOME/.bash_profile.local"
+fi
