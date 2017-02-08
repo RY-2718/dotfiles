@@ -37,9 +37,14 @@ if has('vim_starting')
 endif
 filetype plugin indent on       " restore filetype
 
-" fundamental
+" 表示関連の設定
 " タブをスペースに展開
 set expandtab
+" Makefileでだけタブをスペースに展開しない
+let _curfile=expand("%:r")
+if _curfile == 'Makefile' || 'makefile'
+    set noexpandtab
+endif
 " タブの画面上での幅
 set tabstop=4
 " Tabキーを押したときに挿入されるスペース幅
@@ -61,6 +66,7 @@ set scrolloff=3
 " タイトルを表示
 set title
 
+" 検索関連の設定
 " 検索結果をハイライト表示
 set hlsearch
 " 検索時に大文字小文字を無視 (noignorecase:無視しない)
@@ -69,6 +75,8 @@ set ignorecase
 set smartcase
 " 検索時にファイルの最後まで行ったら最初に戻る (nowrapscan:戻らない)
 set wrapscan
+
+" 動作に関わる設定
 autocmd FileType * setlocal formatoptions-=ro
 " 表示行単位で上下移動するように
 nnoremap j gj
@@ -78,11 +86,12 @@ nnoremap <Up>   gk
 " 逆に普通の行単位で移動したい時のために逆の map も設定しておく
 nnoremap gj j
 nnoremap gk k
-
 "ビープ音を鳴らさない
 set vb t_vb=
 " C-AやC-Xでインクリメント/デクリメントするときに10進数として扱う
 set nrformats-=octal
+" バックスペースでインデントや改行を削除できるようにする
+set backspace=indent,eol,start
 
 " colorscheme
 let g:hybrid_use_iTerm_colors = 1
@@ -98,6 +107,7 @@ syntax enable
 autocmd FileType text setlocal textwidth=0
 autocmd FileType rb setlocal textwidth=108
 
+" mac固有の設定
 if has('mac')
     set encoding=utf-8
     set ambiwidth=double
