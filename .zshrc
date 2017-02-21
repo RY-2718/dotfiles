@@ -12,13 +12,6 @@ fi
 
 # Customize to your needs...
 
-# fundamental alias
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
-alias ll='ls -l'
-alias la='ls -al'
-
 # History
 export HISTFILE=${HOME}/.zsh_history
 export HISTSIZE=100000000
@@ -49,14 +42,17 @@ setopt nonomatch
 #alias vim='mvim -v'
 
 #personal
-alias showhidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
-alias unshowhidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
 echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"
 function chpwd() { echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 
 # Source local file.
 if [[ -s "$HOME/.zshrc.local" ]]; then
     source "$HOME/.zshrc.local"
+fi
+
+# Source aliases file
+if [[ -s "$HOME/.aliases" ]]; then
+    source "$HOME/.aliases"
 fi
 
 echo "~/.zshrc"
