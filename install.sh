@@ -9,10 +9,6 @@ do
 	[[ "$f" == ".gitmodules" ]] && continue
 	[[ "$f" == ".gitconfig" ]] && continue
 	[[ "$f" == "install.sh" ]] && continue
-    if [ "$f" == "com.googlecode.iterm2.plist" ]; then
-        rm ~/Library/Preferences/com.googlecode.iterm2.plist
-        ln -s ~/dotfiles/com.googlecode.iterm2.plist ~/Library/Preferences/com.googlecode.iterm2.plist
-    fi
 
 	ln -Fis "$PWD/$f" $HOME
 	echo "$f"
