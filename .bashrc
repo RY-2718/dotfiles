@@ -6,8 +6,8 @@ function cdls() {
 }
 
 # Source local file.
-if [[ -s "$HOME/.bashrc.local" ]]; then
-    source "$HOME/.bashrc.local"
+if [[ -s "$HOME/.bashrc_local" ]]; then
+    source "$HOME/.bashrc_local"
 fi
 
 # Source aliases file

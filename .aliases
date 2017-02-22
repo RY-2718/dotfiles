@@ -6,6 +6,6 @@ alias ll='ls -l'
 alias la='ls -al'
 
 # Source local file.
-if [[ -s "$HOME/.aliases.local" ]]; then
-    source "$HOME/.aliases.local"
+if [[ -s "$HOME/.aliases_local" ]]; then
+    source "$HOME/.aliases_local"
 fi

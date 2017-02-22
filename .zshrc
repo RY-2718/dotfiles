@@ -46,8 +46,8 @@ echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"
 function chpwd() { echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 
 # Source local file.
-if [[ -s "$HOME/.zshrc.local" ]]; then
-    source "$HOME/.zshrc.local"
+if [[ -s "$HOME/.zshrc_local" ]]; then
+    source "$HOME/.zshrc_local"
 fi
 
 # Source aliases file

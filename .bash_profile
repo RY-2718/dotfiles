@@ -7,6 +7,6 @@ export CLICOLOR=1
 eval "$(rbenv init -)"
 
 # Source local file.
-if [[ -s "$HOME/.bash_profile.local" ]]; then
-    source "$HOME/.bash_profile.local"
+if [[ -s "$HOME/.bash_profile_local" ]]; then
+    source "$HOME/.bash_profile_local"
 fi
