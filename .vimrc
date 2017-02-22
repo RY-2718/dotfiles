@@ -1,41 +1,7 @@
 " :scriptnamesで読み込んだファイルを確認できます
 
-if has('mac')
-    let vimproc_dll_path = $HOME . '/.vim/bundle/vimproc.vim/lib/vimproc_mac.so'
-endif
-
 " vimじゃなくてviっぽい動作をしないようにする 
 set nocompatible
-filetype off            " for NeoBundle
-
-if has('vim_starting')
-    set rtp+=$HOME/.vim/neobundle.vim/
-    call neobundle#begin(expand('~/.vim/bundle'))
-    NeoBundleFetch 'Shougo/neobundle.vim'
-    " ここから NeoBundle でプラグインを設定します
-    "  
-    " NeoBundle で管理するプラグインを追加します。
-    NeoBundle 'Shougo/neocomplcache.git'
-    NeoBundle 'Shougo/unite.vim.git'
-    NeoBundle 'altercation/vim-colors-solarized'
-    NeoBundle 'w0ng/vim-hybrid'
-    NeoBundle 'Shougo/vimproc.vim', {
-                \ 'build' : {
-                \     'windows' : 'tools\\update-dll-mingw',
-                \     'cygwin' : 'make -f make_cygwin.mak',
-                \     'mac' : 'make',
-                \     'linux' : 'make',
-                \     'unix' : 'gmake',
-                \    },
-                \ }
-    NeoBundle 'mattn/emmet-vim'
-    NeoBundle 'tpope/surround.vim'
-    NeoBundle 'pangloss/vim-javascript'
-    NeoBundle 'nathanaelkane/vim-indent-guides'
-    NeoBundle 'jelera/vim-javascript-syntax'
-    call neobundle#end()
-endif
-filetype plugin indent on       " restore filetype
 
 " 表示関連の設定
 " タブをスペースに展開
@@ -92,29 +58,14 @@ set vb t_vb=
 set nrformats-=octal
 " バックスペースでインデントや改行を削除できるようにする
 set backspace=indent,eol,start
-
-" colorscheme
-let g:hybrid_use_iTerm_colors = 1
-set background=dark
-colorscheme hybrid
-syntax enable
-
-" history
-:set undodir=$HOME/.vim_history/undo
-:set backupdir=$HOME/.vim_history/tmp
+" エンコーディングをutf-8にする
+set encoding=utf-8
 
 " 拡張子ごとに幅を設定
 autocmd FileType text setlocal textwidth=0
 autocmd FileType rb setlocal textwidth=108
 
-" mac固有の設定
-if has('mac')
-    set encoding=utf-8
-    set ambiwidth=double
-    if exists('$LANG') && $LANG ==# 'ja_JP.UTF-8'
-        set langmenu=ja_ja.utf-8.macvim
-    endif
-
-    " Macではデフォルトの'iskeyword'がcp932に対応しきれていないので修正
-    set iskeyword=@,48-57,_,128-167,224-235
+" ローカル設定を読み込む
+if filereadable(expand($HOME.'/.vimrc_local'))
+  source $HOME/.vimrc_local
 endif
