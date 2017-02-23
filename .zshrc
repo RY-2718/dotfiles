@@ -54,6 +54,7 @@ setopt nonomatch
 echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"
 function chpwd() { echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 export GREP_COLOR="34;47"
+export GREP_COLORS="mt=34;47"
 
 # Source local file.
 if [[ -s "$HOME/.zshrc_local" ]]; then
