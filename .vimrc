@@ -65,6 +65,9 @@ set encoding=utf-8
 autocmd FileType text setlocal textwidth=0
 autocmd FileType rb setlocal textwidth=108
 
+" highlightカスタマイズ設定
+autocmd ColorScheme * highlight Conceal ctermbg=none
+
 " ローカル設定を読み込む
 if filereadable(expand($HOME.'/.vimrc_local'))
   source $HOME/.vimrc_local
