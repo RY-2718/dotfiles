@@ -65,5 +65,3 @@ fi
 if [[ -s "$HOME/.aliases" ]]; then
     source "$HOME/.aliases"
 fi
-
-echo "~/.zshrc"
