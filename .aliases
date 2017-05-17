@@ -5,6 +5,8 @@ alias mv='mv -i'
 alias ll='ls -l'
 alias la='ls -al'
 
+alias vmstat='vmstat -t'
+
 # Source local file.
 if [[ -s "$HOME/.aliases_local" ]]; then
     source "$HOME/.aliases_local"
