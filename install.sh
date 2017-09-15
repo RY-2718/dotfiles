@@ -7,7 +7,6 @@ do
 	[[ "$f" == ".DS_Store" ]] && continue
 	[[ "$f" == ".gitignore" ]] && continue
 	[[ "$f" == ".gitmodules" ]] && continue
-	[[ "$f" == ".gitconfig" ]] && continue
 	[[ "$f" == "install.sh" ]] && continue
 
 	ln -Fis "$PWD/$f" $HOME
