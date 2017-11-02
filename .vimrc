@@ -72,3 +72,65 @@ autocmd ColorScheme * highlight Conceal ctermbg=none
 if filereadable(expand($HOME.'/.vimrc_local'))
   source $HOME/.vimrc_local
 endif
+
+" neobundle ローカル設定で変数を設定すれば動くようにしたい
+if exists('enabling_neobundle')
+    let vimproc_dll_path = $HOME . '/.vim/bundle/vimproc.vim/lib/vimproc_mac.so'
+    
+    filetype off " for NeoBundle
+    
+    if has('vim_starting')
+        set runtimepath+=$HOME/.vim/neobundle.vim/
+        call neobundle#begin(expand('~/.vim/bundle/'))
+        NeoBundleFetch 'Shougo/neobundle.vim'
+        " ここから NeoBundle でプラグインを設定します
+        "  
+        " NeoBundle で管理するプラグインを追加します。
+        NeoBundle 'Shougo/neocomplcache.git'
+        NeoBundle 'Shougo/unite.vim.git'
+        NeoBundle 'altercation/vim-colors-solarized'
+        NeoBundle 'w0ng/vim-hybrid'
+        NeoBundle 'Shougo/vimproc.vim', {
+                    \ 'build' : {
+                    \     'windows' : 'tools\\update-dll-mingw',
+                    \     'cygwin' : 'make -f make_cygwin.mak',
+                    \     'mac' : 'make',
+                    \     'linux' : 'make',
+                    \     'unix' : 'gmake',
+                    \    },
+                    \ }
+        NeoBundle 'mattn/emmet-vim'
+        NeoBundle 'pangloss/vim-javascript'
+        NeoBundle 'nathanaelkane/vim-indent-guides'
+        NeoBundle 'jelera/vim-javascript-syntax'
+        NeoBundle 'aereal/vim-colors-japanesque'
+        call neobundle#end()
+    endif
+    filetype plugin indent on       " restore filetype
+    NeoBundleCheck
+    
+    let g:neobundle#log_filename = $HOME . "/neobundle.log"
+
+    " colorscheme
+    let g:hybrid_use_iTerm_colors = 1
+    set background=dark
+    colorscheme japanesque
+    syntax enable
+endif
+
+if has('mac')
+    set ambiwidth=double
+    if exists('$LANG') && $LANG ==# 'ja_JP.UTF-8'
+        set langmenu=ja_ja.utf-8.macvim
+    endif
+    
+    " Macではデフォルトの'iskeyword'がcp932に対応しきれていないので修正
+    set iskeyword=@,48-57,_,128-167,224-235
+endif
+
+" history
+if exists('enable_history')
+    set undodir=./.vimundo,$HOME/.vim_history/undo
+    set undofile
+    set backupdir=./.vimtmp,$HOME/.vim_history/tmp
+endif
