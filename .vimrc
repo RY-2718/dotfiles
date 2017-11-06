@@ -74,7 +74,7 @@ if filereadable(expand($HOME.'/.vimrc_local'))
 endif
 
 " neobundle ローカル設定で変数を設定すれば動くようにしたい
-if exists('enabling_neobundle')
+if exists('enable_neobundle')
     let vimproc_dll_path = $HOME . '/.vim/bundle/vimproc.vim/lib/vimproc_mac.so'
     
     filetype off " for NeoBundle
