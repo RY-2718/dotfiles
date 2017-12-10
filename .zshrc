@@ -39,7 +39,10 @@ function peco-history-selection() {
 }
 
 zle -N peco-history-selection
-bindkey '^R' peco-history-selection
+
+if type peco 2>&1 > /dev/null; then
+    bindkey '^R' peco-history-selection
+fi
 
 # additional setting
 setopt no_beep
@@ -55,6 +58,11 @@ echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"
 function chpwd() { echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
 export GREP_COLOR="34;47"
 export GREP_COLORS="mt=34;47"
+
+# PATH settings
+if [ -d $HOME/bin ]; then
+  export PATH=$HOME/bin:$PATH
+fi
 
 # Source local file.
 if [[ -s "$HOME/.zshrc_local" ]]; then
