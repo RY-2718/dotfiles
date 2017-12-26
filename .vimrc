@@ -104,6 +104,7 @@ if exists('enable_neobundle')
         NeoBundle 'nathanaelkane/vim-indent-guides'
         NeoBundle 'jelera/vim-javascript-syntax'
         NeoBundle 'aereal/vim-colors-japanesque'
+        NeoBundle 'Vimjas/vim-python-pep8-indent'
         call neobundle#end()
     endif
     filetype plugin indent on       " restore filetype
