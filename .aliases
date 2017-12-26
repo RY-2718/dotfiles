@@ -6,6 +6,7 @@ alias ll='ls -l'
 alias la='ls -al'
 
 alias vmstat='vmstat -t'
+alias relogin='exec $SHELL -l'
 
 # Source local file.
 if [[ -s "$HOME/.aliases_local" ]]; then
