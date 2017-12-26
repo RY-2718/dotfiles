@@ -63,7 +63,6 @@ set encoding=utf-8
 
 " 拡張子ごとに幅を設定
 autocmd FileType text setlocal textwidth=0
-autocmd FileType rb setlocal textwidth=108
 
 " highlightカスタマイズ設定
 autocmd ColorScheme * highlight Conceal ctermbg=none
