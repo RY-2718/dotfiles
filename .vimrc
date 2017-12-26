@@ -105,6 +105,7 @@ if exists('enable_neobundle')
         NeoBundle 'jelera/vim-javascript-syntax'
         NeoBundle 'aereal/vim-colors-japanesque'
         NeoBundle 'Vimjas/vim-python-pep8-indent'
+        NeoBundle 'slim-template/vim-slim'
         call neobundle#end()
     endif
     filetype plugin indent on       " restore filetype
@@ -135,3 +136,6 @@ if exists('enable_history')
     set undofile
     set backupdir=./.vimtmp,$HOME/.vim_history/tmp
 endif
+
+" slim
+autocmd BufRead,BufNewFile *.slim setfiletype slim
