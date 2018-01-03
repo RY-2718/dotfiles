@@ -60,6 +60,12 @@ set nrformats-=octal
 set backspace=indent,eol,start
 " エンコーディングをutf-8にする
 set encoding=utf-8
+" 自動コメントアウトを無効化
+augroup auto_comment_off
+    autocmd!
+    autocmd BufEnter * setlocal formatoptions-=r
+    autocmd BufEnter * setlocal formatoptions-=o
+augroup END
 
 " 拡張子ごとに幅を設定
 autocmd FileType text setlocal textwidth=0
