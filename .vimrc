@@ -111,6 +111,9 @@ if exists('enable_neobundle')
         NeoBundle 'aereal/vim-colors-japanesque'
         NeoBundle 'Vimjas/vim-python-pep8-indent'
         NeoBundle 'slim-template/vim-slim'
+        NeoBundle 'posva/vim-vue'
+        NeoBundle 'Shougo/context_filetype.vim'
+        NeoBundle 'osyo-manga/vim-precious'
         call neobundle#end()
     endif
     filetype plugin indent on       " restore filetype
@@ -144,3 +147,6 @@ endif
 
 " slim
 autocmd BufRead,BufNewFile *.slim setfiletype slim
+
+" vue
+autocmd BufNewFile,BufRead *.vue set filetype=html
