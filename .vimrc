@@ -75,15 +75,15 @@ autocmd ColorScheme * highlight Conceal ctermbg=none
 
 " ローカル設定を読み込む
 if filereadable(expand($HOME.'/.vimrc_local'))
-  source $HOME/.vimrc_local
+    source $HOME/.vimrc_local
 endif
 
 " neobundle ローカル設定で変数を設定すれば動くようにしたい
 if exists('enable_neobundle')
     let vimproc_dll_path = $HOME . '/.vim/bundle/vimproc.vim/lib/vimproc_mac.so'
-    
+
     filetype off " for NeoBundle
-    
+
     if has('vim_starting')
         set runtimepath+=$HOME/.vim/neobundle.vim/
         call neobundle#begin(expand('~/.vim/bundle/'))
@@ -118,7 +118,7 @@ if exists('enable_neobundle')
     endif
     filetype plugin indent on       " restore filetype
     NeoBundleCheck
-    
+
     let g:neobundle#log_filename = $HOME . "/neobundle.log"
 
     " colorscheme
@@ -133,7 +133,7 @@ if has('mac')
     if exists('$LANG') && $LANG ==# 'ja_JP.UTF-8'
         set langmenu=ja_ja.utf-8.macvim
     endif
-    
+
     " Macではデフォルトの'iskeyword'がcp932に対応しきれていないので修正
     set iskeyword=@,48-57,_,128-167,224-235
 endif

@@ -7,7 +7,7 @@
 
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+    source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
 # Customize to your needs...
@@ -61,7 +61,7 @@ export GREP_COLORS="mt=34;47"
 
 # PATH settings
 if [ -d $HOME/bin ]; then
-  export PATH=$HOME/bin:$PATH
+    export PATH=$HOME/bin:$PATH
 fi
 
 # Source local file.
