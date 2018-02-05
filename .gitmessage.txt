@@ -27,7 +27,7 @@
 # ==== Messages ====
 # 新規(ファイル)機能追加 Add
 # 機能修正、既存機能追加（バグではない) Update
-# リファクタリング Clean
+# リファクタリング Refactor
 # 削除など Remove
 # バグ修正 Fix
 # バージョンアップ Upgrade
