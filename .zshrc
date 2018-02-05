@@ -7,7 +7,7 @@
 
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-  source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
+    source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
 # Customize to your needs...
@@ -61,7 +61,7 @@ export GREP_COLORS="mt=34;47"
 
 # PATH settings
 if [ -d $HOME/bin ]; then
-  export PATH=$HOME/bin:$PATH
+    export PATH=$HOME/bin:$PATH
 fi
 
 # Source local file.
@@ -73,3 +73,21 @@ fi
 if [[ -s "$HOME/.aliases" ]]; then
     source "$HOME/.aliases"
 fi
+
+# 一時作業用コマンド http://bit.ly/22GF66y
+tmpspace() {
+    (
+    d=$(mktemp -d "${TMPDIR:-/tmp}/${1:-tmpspace}.XXXXXXXXXX") && cd "$d" || exit 1
+    "$SHELL"
+    s=$?
+    if [[ $s == 0 ]]; then
+        rm -rf "$d"
+    else
+        echo "Directory '$d' still exists." >&2
+    fi
+    exit $s
+    )
+}
+
+# typoで補完が出てこないのもストレスなのでaliasも作っておくことにした
+alias tempspace=tmpspace

@@ -21,7 +21,7 @@
 # 🔇 ログ削除 :mute:
 # 🐛 バグ修正 :bug:
 # 🔖 バージョンアップ :bookmark:
-# ⤴️  依存ライブラリなどのバージョンアップ :arrow_heading_up:
+# ⤴️ 依存ライブラリなどのバージョンアップ :arrow_heading_up:
 # 🎉 イニシャルコミット :tada:
 
 # ==== Messages ====
