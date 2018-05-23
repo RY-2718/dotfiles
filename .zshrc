@@ -81,6 +81,7 @@ tmpspace() {
     "$SHELL"
     s=$?
     if [[ $s == 0 ]]; then
+        alias rm='rm'
         rm -rf "$d"
     else
         echo "Directory '$d' still exists." >&2
