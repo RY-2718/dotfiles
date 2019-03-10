@@ -13,7 +13,3 @@ do
 	echo "$f"
 done
 
-# link Prezto.
-# if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/runcoms/zpreztorc" ]]; then
-#     ln -s "${ZDOTDIR:-$HOME}/.zprezto/runcoms/zpreztorc" $HOME/.zpreztorc
-# fi
