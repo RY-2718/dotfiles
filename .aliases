@@ -2,6 +2,7 @@
 alias rm='rm -i'
 alias cp='cp -aip'
 alias mv='mv -i'
+alias ls='ls -G'
 alias ll='ls -l'
 alias la='ls -al'
 
