@@ -5,11 +5,6 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
-# Source Prezto.
-if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
-    source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
-fi
-
 # Customize to your needs...
 
 # History
@@ -91,3 +86,9 @@ tmpspace() {
 
 # typoで補完が出てこないのもストレスなのでaliasも作っておくことにした
 alias tempspace=tmpspace
+
+# zplugがインストールされていない場合はインストールを促す
+if !(type zplug 2>&1 > /dev/null); then
+    echo "Please install zplug!"
+fi
+
