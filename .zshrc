@@ -88,7 +88,7 @@ tmpspace() {
 alias tempspace=tmpspace
 
 # zplugがインストールされていない場合はインストールを促す
-if !(type zplug 2>&1 > /dev/null); then
+if ! (type zplug 2>&1 > /dev/null); then
     echo "Please install zplug!"
 fi
 
