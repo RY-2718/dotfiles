@@ -88,7 +88,19 @@ tmpspace() {
 alias tempspace=tmpspace
 
 # zplugがインストールされていない場合はインストールを促す
-if ! (type zplug 2>&1 > /dev/null); then
+if type zplug 2>&1 > /dev/null; then
+    zplug "zsh-users/zsh-autosuggestions"
+    zplug "mafredri/zsh-async", from:github
+    zplug "sindresorhus/pure", use:pure.zsh, from:github, as:theme
+    zplug "zsh-users/zsh-syntax-highlighting"
+	if ! zplug check --verbose; then
+	    printf "Install? [y/N]: "
+	    if read -q; then
+	        echo; zplug install
+	    fi
+	fi
+	zplug load --verbose
+else
     echo "Please install zplug!"
 fi
 
