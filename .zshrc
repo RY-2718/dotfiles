@@ -43,14 +43,11 @@ fi
 setopt no_beep
 setopt nonomatch
 
-#vim
-#alias vi=vim
-#alias vim='env_LANG=ja_JP.UTF-8 /Applications/MacVim.app/Contents/MacOS/Vim'
-#alias vim='mvim -v'
-
-#personal
+# personal
 echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"
 function chpwd() { echo -ne "\033]0;$(pwd | rev | awk -F \/ '{print "/"$1"/"$2}'| rev)\007"}
+
+# grep color
 export GREP_COLOR="34;47"
 export GREP_COLORS="mt=34;47"
 
