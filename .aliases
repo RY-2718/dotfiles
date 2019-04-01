@@ -9,6 +9,12 @@ alias la='ls -al'
 alias vmstat='vmstat -t'
 alias relogin='exec $SHELL -l'
 
+# ghq
+
+if type ghq 2>&1 > /dev/null; then
+    alias g='cd $(ghq root)/$(ghq list | peco)'
+fi
+
 # Source local file.
 if [[ -s "$HOME/.aliases_local" ]]; then
     source "$HOME/.aliases_local"
