@@ -15,6 +15,8 @@ if type ghq 2>&1 > /dev/null; then
     alias g='cd $(ghq root)/$(ghq list | peco)'
 fi
 
+alias gocd='cd ~/go/src/$(find $HOME/go/src -type d -mindepth 3 -maxdepth 3 | grep -v "golang.org" | grep -v "gopkg.in" | sed "s#$(echo $HOME)/go/src/##g" | peco)'
+
 # Source local file.
 if [[ -s "$HOME/.aliases_local" ]]; then
     source "$HOME/.aliases_local"
