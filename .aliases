@@ -2,7 +2,11 @@
 alias rm='rm -i'
 alias cp='cp -aip'
 alias mv='mv -i'
-alias ls='ls --color'
+if [ "$(uname)" == 'Darwin' ]; then
+  alias ls='ls -G'
+elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+  alias ls='ls --color'
+fi
 alias ll='ls -l'
 alias la='ls -al'
 
