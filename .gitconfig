@@ -8,3 +8,7 @@
 	tool = vimdiff
 [commit]
 	template = ~/.gitmessage.txt
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+[url "git@bitbucket.org:"]
+    insteadOf = https://bitbucket.org/
