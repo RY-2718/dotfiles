@@ -13,3 +13,14 @@ do
 	echo "$f"
 done
 
+if [ ! -e $HOME/bin ]; then
+    cp template/bin $HOME
+fi
+
+if [ ! -e $HOME/opt ]; then
+    cp template/opt $HOME
+fi
+
+if [ ! -e $HOME/tools ]; then
+    cp template/tools $HOME
+fi
