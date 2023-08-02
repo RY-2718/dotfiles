@@ -14,13 +14,13 @@ do
 done
 
 if [ ! -e $HOME/bin ]; then
-    cp template/bin $HOME
+    cp -r template/bin $HOME
 fi
 
 if [ ! -e $HOME/opt ]; then
-    cp template/opt $HOME
+    cp -r template/opt $HOME
 fi
 
 if [ ! -e $HOME/tools ]; then
-    cp template/tools $HOME
+    cp -r template/tools $HOME
 fi

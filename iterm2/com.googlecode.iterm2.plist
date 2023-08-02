@@ -3290,7 +3290,7 @@
 		</dict>
 	</array>
 	<key>OnlyWhenMoreTabs</key>
-	<true/>
+	<false/>
 	<key>OpenArrangementAtStartup</key>
 	<false/>
 	<key>OpenBookmark</key>
@@ -3302,7 +3302,7 @@
 	<key>PasteFromClipboard</key>
 	<false/>
 	<key>PasteTabToStringTabStopSize</key>
-	<integer>4</integer>
+	<integer>1</integer>
 	<key>PerformDNSLookups</key>
 	<false/>
 	<key>PointerActions</key>
@@ -3339,7 +3339,7 @@
 		</dict>
 	</dict>
 	<key>PromptOnQuit</key>
-	<true/>
+	<false/>
 	<key>QuitWhenAllWindowsClosed</key>
 	<false/>
 	<key>RightCommand</key>
