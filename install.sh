@@ -51,6 +51,42 @@ error() {
 # ユーティリティ関数
 # ============================================================================
 
+# ユーザーに Y/n の確認を求める関数
+ask_user_confirmation() {
+    local message="$1"
+    local default_yes="${2:-false}"
+
+    if [[ "$default_yes" == true ]]; then
+        echo -n "$message [Y/n]: "
+    else
+        echo -n "$message [y/N]: "
+    fi
+
+    read -r response
+
+    case "$response" in
+        [yY]|[yY][eE][sS])
+            return 0  # Yes
+            ;;
+        [nN]|[nN][oO])
+            return 1  # No
+            ;;
+        "")
+            # デフォルト値を使用
+            if [[ "$default_yes" == true ]]; then
+                return 0  # Yes
+            else
+                return 1  # No
+            fi
+            ;;
+        *)
+            # 無効な入力の場合は再度確認
+            warning "無効な入力です。y/n または Y/N で回答してください。"
+            ask_user_confirmation "$message" "$default_yes"
+            ;;
+    esac
+}
+
 check_dependencies() {
     local missing_deps=()
 
@@ -132,6 +168,7 @@ create_symlink() {
     local source="$1"
     local target="$HOME/$(basename "$source")"
     local basename_file="$(basename "$source")"
+    local interactive="${2:-false}"
 
     # ソースファイルの存在確認
     if [[ ! -e "$source" ]]; then
@@ -150,17 +187,41 @@ create_symlink() {
             ;;
         1)  # 更新
             local current_target="$(readlink "$target")"
-            info "既存リンクの更新: $basename_file ($current_target -> $source)"
+            info "既存リンクの更新対象: $basename_file ($(basename "$current_target") -> $basename_file)"
+
+            # インタラクティブモードの場合は確認
+            if [[ "$interactive" == true ]]; then
+                if ! ask_user_confirmation "既存のシンボリックリンク $basename_file を更新しますか？" true; then
+                    info "スキップ: $basename_file (ユーザーが拒否)"
+                    return 0
+                fi
+            fi
+
             backup_file "$basename_file"
             rm -f "$target"
             ;;
         2)  # バックアップ
-            info "既存ファイルをバックアップ: $basename_file"
+            info "既存ファイルのバックアップ対象: $basename_file"
+
+            # インタラクティブモードの場合は確認
+            if [[ "$interactive" == true ]]; then
+                if ! ask_user_confirmation "既存ファイル $basename_file をバックアップして置き換えますか？" true; then
+                    info "スキップ: $basename_file (ユーザーが拒否)"
+                    return 0
+                fi
+            fi
+
             backup_file "$basename_file"
             rm -f "$target"
             ;;
         3)  # 新規作成
-            # 何もしない（新規作成）
+            if [[ "$interactive" == true ]]; then
+                info "新規作成対象: $basename_file"
+                if ! ask_user_confirmation "新しいシンボリックリンク $basename_file を作成しますか？" true; then
+                    info "スキップ: $basename_file (ユーザーが拒否)"
+                    return 0
+                fi
+            fi
             ;;
     esac
 
@@ -209,6 +270,7 @@ copy_template_dir() {
 install_dotfiles() {
     local dotfiles=()
     local failed_files=()
+    local interactive="${1:-false}"
 
     # dotfilesファイルリストを取得（除外ファイルを除く）
     while IFS= read -r -d '' file; do
@@ -216,8 +278,16 @@ install_dotfiles() {
 
         # 除外ファイルをスキップ
         case "$basename_file" in
-            ".git"|".DS_Store"|".gitignore"|".gitmodules"|"install.sh"|"CLAUDE.md")
+            ".git"|".DS_Store"|".gitignore"|".gitmodules"|"install.sh")
                 continue
+                ;;
+            "CLAUDE.md")
+                # リポジトリルートの CLAUDE.md は除外、.claude/CLAUDE.md は対象
+                if [[ "$file" == "$SCRIPT_DIR/CLAUDE.md" ]]; then
+                    continue
+                else
+                    dotfiles+=("$file")
+                fi
                 ;;
             *)
                 dotfiles+=("$file")
@@ -227,9 +297,13 @@ install_dotfiles() {
 
     info "dotfilesインストール開始 (${#dotfiles[@]}個のファイル)"
 
+    if [[ "$interactive" == true ]]; then
+        info "インタラクティブモード: ファイルごとに確認します"
+    fi
+
     # 各dotfileのシンボリックリンクを作成
     for file in "${dotfiles[@]}"; do
-        if ! create_symlink "$file"; then
+        if ! create_symlink "$file" "$interactive"; then
             failed_files+=("$(basename "$file")")
         fi
     done
@@ -268,13 +342,33 @@ install_template_dirs() {
 
 # バックアップからの復元
 rollback() {
-    if [[ ! -d "$BACKUP_DIR" ]]; then
-        error "バックアップディレクトリが見つかりません: $BACKUP_DIR"
-        return 1
+    local specified_backup_dir="$1"
+    local target_backup_dir
+
+    if [[ -n "$specified_backup_dir" ]]; then
+        # 指定されたバックアップディレクトリを使用
+        if [[ ! -d "$specified_backup_dir" ]]; then
+            error "指定されたバックアップディレクトリが見つかりません: $specified_backup_dir"
+            return 1
+        fi
+        target_backup_dir="$specified_backup_dir"
+    else
+        # 最新のバックアップディレクトリを自動検索
+        target_backup_dir=$(find "$HOME" -maxdepth 1 -name ".dotfiles_backup_*" -type d | sort -r | head -1)
+
+        if [[ -z "$target_backup_dir" ]]; then
+            error "バックアップディレクトリが見つかりません"
+            info "利用可能なバックアップディレクトリ:"
+            find "$HOME" -maxdepth 1 -name ".dotfiles_backup_*" -type d | sort -r || echo "なし"
+            return 1
+        fi
+
+        info "最新のバックアップを使用: $(basename "$target_backup_dir")"
     fi
 
     warning "ロールバックを実行します..."
     warning "この操作により現在のdotfilesが上書きされます"
+    info "復元元: $target_backup_dir"
 
     # 確認プロンプト
     echo -n "本当にロールバックしますか? [y/N]: "
@@ -292,7 +386,7 @@ rollback() {
     local restored_count=0
 
     # バックアップファイルを復元
-    for backup_file in "$BACKUP_DIR"/*; do
+    for backup_file in "$target_backup_dir"/*; do
         if [[ -f "$backup_file" ]]; then
             local filename="$(basename "$backup_file")"
             if cp "$backup_file" "$HOME/$filename"; then
@@ -321,14 +415,17 @@ show_help() {
 使用方法: $0 [オプション]
 
 オプション:
-    -h, --help      このヘルプを表示
-    -f, --force     確認なしで実行
-    -d, --dry-run   実際の処理を行わずにプレビューのみ
-    --rollback      最新のバックアップからロールバック
+    -h, --help          このヘルプを表示
+    -f, --force         確認なしで実行
+    -i, --interactive   ファイルごとに個別に確認
+    -d, --dry-run       実際の処理を行わずにプレビューのみ
+    --rollback [DIR]    バックアップからロールバック (DIR省略時は最新を使用)
 
 説明:
     このスクリプトはdotfilesを安全にインストールします。
     既存ファイルは自動的にバックアップされます。
+    
+    注意: -f (--force) を指定しない場合、デフォルトで各ファイルの処理前に確認を求めます。
 
 バックアップ場所: ~/.dotfiles_backup_YYYYMMDD_HHMMSS/
 ログファイル: $SCRIPT_DIR/install.log
@@ -350,8 +447,38 @@ dry_run() {
         local basename_file="$(basename "$file")"
 
         case "$basename_file" in
-            ".git"|".DS_Store"|".gitignore"|".gitmodules"|"install.sh"|"CLAUDE.md")
+            ".git"|".DS_Store"|".gitignore"|".gitmodules"|"install.sh")
                 continue
+                ;;
+            "CLAUDE.md")
+                # リポジトリルートの CLAUDE.md は除外、.claude/CLAUDE.md は対象
+                if [[ "$file" == "$SCRIPT_DIR/CLAUDE.md" ]]; then
+                    continue
+                fi
+                # .claude/CLAUDE.md の場合は通常処理に進む
+
+                check_symlink_status "$file"
+                local status=$?
+
+                case $status in
+                    0)  # スキップ
+                        echo "[SKIP] $basename_file (既に正しいリンクが存在)"
+                        ((skip_count++))
+                        ;;
+                    1)  # 更新
+                        local current_target="$(readlink "$HOME/$basename_file")"
+                        echo "[UPDATE] $basename_file (リンク先変更: $(basename "$current_target") -> $basename_file)"
+                        ((update_count++))
+                        ;;
+                    2)  # バックアップ
+                        echo "[BACKUP] $basename_file (既存ファイルをバックアップして置換)"
+                        ((backup_count++))
+                        ;;
+                    3)  # 新規作成
+                        echo "[CREATE] $basename_file (新規リンク作成)"
+                        ((create_count++))
+                        ;;
+                esac
                 ;;
             *)
                 # 同じ判定ロジックを使用
@@ -421,6 +548,8 @@ main() {
     local force=false
     local dry_run_mode=false
     local rollback_mode=false
+    local interactive=false
+    local rollback_dir=""
 
     # 引数解析
     while [[ $# -gt 0 ]]; do
@@ -437,9 +566,18 @@ main() {
                 dry_run_mode=true
                 shift
                 ;;
+            -i|--interactive)
+                interactive=true
+                shift
+                ;;
             --rollback)
                 rollback_mode=true
                 shift
+                # 次の引数がバックアップディレクトリのパスかチェック
+                if [[ $# -gt 0 && ! "$1" =~ ^- ]]; then
+                    rollback_dir="$1"
+                    shift
+                fi
                 ;;
             *)
                 error "不明なオプション: $1"
@@ -458,7 +596,7 @@ main() {
 
     # ロールバックモード
     if [[ "$rollback_mode" == true ]]; then
-        rollback
+        rollback "$rollback_dir"
         exit $?
     fi
 
@@ -497,10 +635,15 @@ main() {
     # バックアップディレクトリ作成
     create_backup_dir
 
+    # インタラクティブモードの決定（forceが指定されていない場合はinteractiveをデフォルトに）
+    if [[ "$force" != true && "$interactive" != true ]]; then
+        interactive=true
+    fi
+
     # メイン処理実行
     local exit_code=0
 
-    if ! install_dotfiles; then
+    if ! install_dotfiles "$interactive"; then
         error "dotfilesインストールでエラーが発生しました"
         exit_code=1
     fi
@@ -514,10 +657,10 @@ main() {
         info "バックアップ: $BACKUP_DIR"
         info "ログファイル: $LOG_FILE"
         echo
-        info "ロールバックするには: $0 --rollback"
+        info "ロールバックするには: $0 --rollback [バックアップディレクトリ]"
     else
         error "=== インストール失敗 ==="
-        info "ロールバックするには: $0 --rollback"
+        info "ロールバックするには: $0 --rollback [バックアップディレクトリ]"
     fi
 
     exit $exit_code
