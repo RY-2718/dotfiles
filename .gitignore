@@ -3,3 +3,6 @@
 *.swp
 .vim/bundle
 .vim/.netrwhist
+
+# dotfiles install script logs
+install.log
