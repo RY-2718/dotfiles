@@ -13,11 +13,23 @@ alias la='ls -al'
 alias vmstat='vmstat -t'
 alias relogin='exec $SHELL -l'
 
-# ghq
-
-if type ghq >/dev/null 2>&1; then
-    alias g='cd $(ghq root)/$(ghq list | peco)'
-    alias gocd='cd ~/go/src/$(find $HOME/go/src -type d -mindepth 3 -maxdepth 3 | grep -v "golang.org" | grep -v "gopkg.in" | sed "s#$(echo $HOME)/go/src/##g" | peco)'
+# ============================================================================
+# ghq + fzf integration
+# ============================================================================
+#
+# ghqで管理されているリポジトリをfzfで選択して移動
+# 使い方:
+#   g:    ghqリポジトリをfuzzy検索して移動
+#
+# 前提条件:
+#   - ghq: リポジトリ管理ツール
+#   - fzf: fuzzy finder
+#
+if type ghq >/dev/null 2>&1 && type fzf >/dev/null 2>&1; then
+    alias g='cd $(ghq root)/$(ghq list | fzf --height=40% --reverse --border --preview="ls -la $(ghq root)/{}")'
+elif type ghq >/dev/null 2>&1; then
+    echo "💡 ghqは利用可能ですが、fzfがありません。fzfをインストールするとより便利になります。"
+    alias g='echo "fzfがないため、ghqのfuzzy検索が利用できません。手動で移動してください: cd \$(ghq root)/<repo-name>"'
 fi
 
 
