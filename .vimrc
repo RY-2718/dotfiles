@@ -151,3 +151,8 @@ autocmd BufRead,BufNewFile *.slim setfiletype slim
 
 " vue
 autocmd BufNewFile,BufRead *.vue set filetype=html
+
+" 削除キーでyankしない
+nnoremap x "_x
+nnoremap d "_d
+nnoremap D "_D

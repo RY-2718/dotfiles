@@ -1,2 +1,7 @@
 set visualbell
 set noerrorbells
+" 削除キーでyankしない
+tnoremap x "_x
+nnoremap d "_d
+nnoremap D "_D
+nnoremap c "_c
