@@ -12,8 +12,9 @@ set -euo pipefail  # エラー時即座に終了、未定義変数使用禁止�
 
 # スクリプトの基本設定
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly BACKUP_DIR="$HOME/.dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
-readonly LOG_FILE="$SCRIPT_DIR/install.log"
+readonly BACKUP_DIR="${HOME}/.dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
+readonly LOG_FILE="${SCRIPT_DIR}/install.log"
+readonly IGNORE_FILE="${SCRIPT_DIR}/.installignore"
 
 # 色付きメッセージ用の定数
 readonly RED='\033[0;31m'
@@ -28,23 +29,23 @@ readonly NC='\033[0m' # No Color
 
 # 基本ログ関数（タイムスタンプ付き）
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ${*}" | tee -a "${LOG_FILE}"
 }
 
 info() {
-    echo -e "${BLUE}ℹ${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${BLUE}ℹ${NC} ${*}" | tee -a "${LOG_FILE}"
 }
 
 success() {
-    echo -e "${GREEN}✓${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${GREEN}✓${NC} ${*}" | tee -a "${LOG_FILE}"
 }
 
 warning() {
-    echo -e "${YELLOW}⚠${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${YELLOW}⚠${NC} ${*}" | tee -a "${LOG_FILE}"
 }
 
 error() {
-    echo -e "${RED}✗${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${RED}✗${NC} ${*}" | tee -a "${LOG_FILE}"
 }
 
 # ============================================================================
@@ -53,18 +54,18 @@ error() {
 
 # ユーザーに Y/n の確認を求める関数
 ask_user_confirmation() {
-    local message="$1"
+    local message="${1}"
     local default_yes="${2:-false}"
 
-    if [[ "$default_yes" == true ]]; then
-        echo -n "$message [Y/n]: "
+    if [[ "${default_yes}" == true ]]; then
+        echo -n "${message} [Y/n]: "
     else
-        echo -n "$message [y/N]: "
+        echo -n "${message} [y/N]: "
     fi
 
     read -r response
 
-    case "$response" in
+    case "${response}" in
         [yY]|[yY][eE][sS])
             return 0  # Yes
             ;;
@@ -73,7 +74,7 @@ ask_user_confirmation() {
             ;;
         "")
             # デフォルト値を使用
-            if [[ "$default_yes" == true ]]; then
+            if [[ "${default_yes}" == true ]]; then
                 return 0  # Yes
             else
                 return 1  # No
@@ -82,7 +83,7 @@ ask_user_confirmation() {
         *)
             # 無効な入力の場合は再度確認
             warning "無効な入力です。y/n で回答してください。"
-            ask_user_confirmation "$message" "$default_yes"
+            ask_user_confirmation "${message}" "${default_yes}"
             ;;
     esac
 }
@@ -94,8 +95,8 @@ check_dependencies() {
     local required_commands=("ln" "cp" "mkdir" "date")
 
     for cmd in "${required_commands[@]}"; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
-            missing_deps+=("$cmd")
+        if ! command -v "${cmd}" >/dev/null 2>&1; then
+            missing_deps+=("${cmd}")
         fi
     done
 
@@ -109,20 +110,20 @@ check_dependencies() {
 
 # バックアップディレクトリの作成
 create_backup_dir() {
-    if [[ ! -d "$BACKUP_DIR" ]]; then
-        mkdir -p "$BACKUP_DIR"
-        info "バックアップ作成: $BACKUP_DIR"
+    if [[ ! -d "${BACKUP_DIR}" ]]; then
+        mkdir -p "${BACKUP_DIR}"
+        info "バックアップ作成: ${BACKUP_DIR}"
     fi
 }
 
 # 既存ファイルのバックアップ
 backup_file() {
-    local file="$1"
-    local target="$HOME/$file"
+    local file="${1}"
+    local target="${HOME}/${file}"
 
-    if [[ -e "$target" ]]; then
-        cp -p "$target" "$BACKUP_DIR/"
-        info "バックアップ: $file"
+    if [[ -e "${target}" ]]; then
+        cp -p "${target}" "${BACKUP_DIR}/"
+        info "バックアップ: ${file}"
         return 0
     fi
     return 1
@@ -143,20 +144,20 @@ backup_file() {
 #   2: 通常ファイル/ディレクトリを置換 (バックアップ)
 #   3: ファイルが存在しない (新規作成)
 check_symlink_status() {
-    local source="$1"
-    local target="$HOME/$(basename "$source")"
+    local source="${1}"
+    local target="${HOME}/$(basename "${source}")"
 
-    if [[ -L "$target" ]]; then
+    if [[ -L "${target}" ]]; then
         # シンボリックリンクのリンク先を取得
-        local current_target="$(readlink "$target")"
+        local current_target="$(readlink "${target}")"
 
         # 既に同じリンク先を指している場合
-        if [[ "$current_target" == "$source" ]]; then
+        if [[ "${current_target}" == "${source}" ]]; then
             return 0  # スキップ
         else
             return 1  # 更新
         fi
-    elif [[ -e "$target" ]]; then
+    elif [[ -e "${target}" ]]; then
         return 2  # バックアップ
     else
         return 3  # 新規作成
@@ -165,60 +166,60 @@ check_symlink_status() {
 
 # シンボリックリンクの作成
 create_symlink() {
-    local source="$1"
-    local target="$HOME/$(basename "$source")"
-    local basename_file="$(basename "$source")"
+    local source="${1}"
+    local target="${HOME}/$(basename "${source}")"
+    local basename_file="$(basename "${source}")"
     local force="${2:-false}"
 
     # ソースファイルの存在確認
-    if [[ ! -e "$source" ]]; then
-        error "ソースファイルが存在しません: $source"
+    if [[ ! -e "${source}" ]]; then
+        error "ソースファイルが存在しません: ${source}"
         return 1
     fi
 
     # 状態をチェック
-    check_symlink_status "$source"
+    check_symlink_status "${source}"
     local status=$?
 
     case $status in
         0)  # スキップ
-            info "スキップ: $basename_file (既に正しいリンクが存在)"
+            info "スキップ: ${basename_file} (既に正しいリンクが存在)"
             return 0
             ;;
         1)  # 更新
-            local current_target="$(readlink "$target")"
-            info "既存リンクの更新対象: $basename_file ($(basename "$current_target") -> $basename_file)"
+            local current_target="$(readlink "${target}")"
+            info "既存リンクの更新対象: ${basename_file} ($(basename "${current_target}") -> ${basename_file})"
 
             # forceオプション指定時以外は確認
-            if [[ "$force" != true ]]; then
-                if ! ask_user_confirmation "既存のシンボリックリンク $basename_file を更新しますか？" true; then
-                    info "スキップ: $basename_file"
+            if [[ "${force}" != true ]]; then
+                if ! ask_user_confirmation "既存のシンボリックリンク ${basename_file} を更新しますか？" true; then
+                    info "スキップ: ${basename_file}"
                     return 0
                 fi
             fi
 
-            backup_file "$basename_file"
-            rm -f "$target"
+            backup_file "${basename_file}"
+            rm -f "${target}"
             ;;
         2)  # バックアップ
-            info "バックアップ: $basename_file"
+            info "バックアップ: ${basename_file}"
 
             # forceオプション指定時以外は確認
-            if [[ "$force" != true ]]; then
-                if ! ask_user_confirmation "既存ファイル $basename_file をバックアップして置き換えますか？" true; then
-                    info "スキップ: $basename_file"
+            if [[ "${force}" != true ]]; then
+                if ! ask_user_confirmation "既存ファイル ${basename_file} をバックアップして置き換えますか？" true; then
+                    info "スキップ: ${basename_file}"
                     return 0
                 fi
             fi
 
-            backup_file "$basename_file"
-            rm -f "$target"
+            backup_file "${basename_file}"
+            rm -f "${target}"
             ;;
         3)  # 新規作成
-            if [[ "$force" != true ]]; then
-                info "新規作成: $basename_file"
-                if ! ask_user_confirmation "新しいシンボリックリンク $basename_file を作成しますか？" true; then
-                    info "スキップ: $basename_file"
+            if [[ "${force}" != true ]]; then
+                info "新規作成: ${basename_file}"
+                if ! ask_user_confirmation "新しいシンボリックリンク ${basename_file} を作成しますか？" true; then
+                    info "スキップ: ${basename_file}"
                     return 0
                 fi
             fi
@@ -226,10 +227,10 @@ create_symlink() {
     esac
 
     # シンボリックリンク作成
-    if ln -sf "$source" "$target"; then
-        success "作成: $basename_file"
+    if ln -sf "${source}" "${target}"; then
+        success "作成: ${basename_file}"
     else
-        error "作成失敗: $basename_file"
+        error "作成失敗: ${basename_file}"
         return 1
     fi
 }
@@ -240,26 +241,89 @@ create_symlink() {
 
 # テンプレートディレクトリのコピー
 copy_template_dir() {
-    local dir_name="$1"
-    local source="$SCRIPT_DIR/template/$dir_name"
-    local target="$HOME/$dir_name"
+    local dir_name="${1}"
+    local source="${SCRIPT_DIR}/template/${dir_name}"
+    local target="${HOME}/${dir_name}"
 
-    if [[ ! -d "$source" ]]; then
-        warning "テンプレートディレクトリが存在しません: $source"
+    if [[ ! -d "${source}" ]]; then
+        warning "テンプレートディレクトリが存在しません: ${source}"
         return 1
     fi
 
-    if [[ -e "$target" ]]; then
-        info "$target は既に存在します（スキップ）"
+    if [[ -e "${target}" ]]; then
+        info "${target} は既に存在します（スキップ）"
         return 0
     fi
 
-    if cp -r "$source" "$target"; then
-        success "コピー: $dir_name"
+    if cp -r "${source}" "${target}"; then
+        success "コピー: ${dir_name}"
     else
-        error "コピー失敗: $dir_name"
+        error "コピー失敗: ${dir_name}"
         return 1
     fi
+}
+
+# 除外ファイルリストを読み込む
+load_exclude_list() {
+    local exclude_list=()
+
+    # デフォルトの除外ファイル
+    exclude_list+=(".git" ".DS_Store" ".gitignore" ".gitmodules" "install.sh")
+
+    # 外部除外ファイルが存在する場合は読み込み
+    if [[ -f "${IGNORE_FILE}" ]]; then
+        while IFS= read -r line; do
+            # コメント行と空行をスキップ
+            [[ "${line}" =~ ^[[:space:]]*# ]] && continue
+            [[ -z "${line// }" ]] && continue
+
+            # 行頭の空白を削除
+            line="${line#"${line%%[! ]*}"}"
+            exclude_list+=("${line}")
+        done < "${IGNORE_FILE}"
+        info "除外ファイル読み込み: ${IGNORE_FILE}"
+    fi
+
+    echo "${exclude_list[@]}"
+}
+
+# ファイルが除外リストに含まれているかチェック
+is_excluded() {
+    local filename="${1}"
+    local filepath="${2}"  # フルパスを追加
+    local exclude_list=("${@:3}")
+
+    local is_excluded=false
+    local longest_match=""
+
+    for pattern in "${exclude_list[@]}"; do
+        # パターンがファイル名またはパスにマッチするかチェック
+        local matches=false
+
+        if [[ "${filename}" == "${pattern}" ]] || [[ "${filepath}" == "${pattern}" ]]; then
+            matches=true
+        elif [[ "${pattern}" == *"*"* ]]; then
+            # ワイルドカードパターンの処理
+            if [[ "${filename}" == ${pattern} ]] || [[ "${filepath}" == ${pattern} ]]; then
+                matches=true
+            fi
+        fi
+
+        if [[ "${matches}" == true ]]; then
+            # longest matchをチェック
+            if [[ "${#pattern}" -gt "${#longest_match}" ]]; then
+                longest_match="${pattern}"
+                # !で始まるパターンは除外解除、それ以外は除外
+                if [[ "${pattern}" == "!"* ]]; then
+                    is_excluded=false
+                else
+                    is_excluded=true
+                fi
+            fi
+        fi
+    done
+
+    return $([ "${is_excluded}" == true ] && echo 0 || echo 1)
 }
 
 # ============================================================================
@@ -273,38 +337,29 @@ install_dotfiles() {
     local force="${1:-false}"
 
     # dotfilesファイルリストを取得（除外ファイルを除く）
+    local exclude_list=($(load_exclude_list))
+
     while IFS= read -r -d '' file; do
-        local basename_file="$(basename "$file")"
+        local basename_file="$(basename "${file}")"
 
         # 除外ファイルをスキップ
-        case "$basename_file" in
-            ".git"|".DS_Store"|".gitignore"|".gitmodules"|"install.sh")
-                continue
-                ;;
-            "CLAUDE.md")
-                # リポジトリルートの CLAUDE.md は除外、.claude/CLAUDE.md は対象
-                if [[ "$file" == "$SCRIPT_DIR/CLAUDE.md" ]]; then
-                    continue
-                else
-                    dotfiles+=("$file")
-                fi
-                ;;
-            *)
-                dotfiles+=("$file")
-                ;;
-        esac
-    done < <(find "$SCRIPT_DIR" -maxdepth 1 -name '.*' -type f -print0)
+        if is_excluded "${basename_file}" "${file}" "${exclude_list[@]}"; then
+            continue
+        fi
+
+        dotfiles+=("${file}")
+    done < <(find "${SCRIPT_DIR}" -maxdepth 1 -name '.*' -type f -print0)
 
     info "dotfilesインストール開始 (${#dotfiles[@]}個)"
 
-    if [[ "$force" != true ]]; then
+    if [[ "${force}" != true ]]; then
         info "インタラクティブモード"
     fi
 
     # 各dotfileのシンボリックリンクを作成
     for file in "${dotfiles[@]}"; do
-        if ! create_symlink "$file" "$force"; then
-            failed_files+=("$(basename "$file")")
+        if ! create_symlink "${file}" "${force}"; then
+            failed_files+=("$(basename "${file}")")
         fi
     done
 
@@ -324,8 +379,8 @@ install_template_dirs() {
     info "テンプレートディレクトリインストール開始"
 
     for dir in "${template_dirs[@]}"; do
-        if ! copy_template_dir "$dir"; then
-            failed_dirs+=("$dir")
+        if ! copy_template_dir "${dir}"; then
+            failed_dirs+=("${dir}")
         fi
     done
 
@@ -342,38 +397,44 @@ install_template_dirs() {
 
 # バックアップからの復元
 rollback() {
-    local specified_backup_dir="$1"
+    local specified_backup_dir="${1}"
     local target_backup_dir
 
-    if [[ -n "$specified_backup_dir" ]]; then
+    if [[ -n "${specified_backup_dir}" ]]; then
         # 指定されたバックアップディレクトリを使用
-        if [[ ! -d "$specified_backup_dir" ]]; then
-            error "バックアップディレクトリが見つかりません: $specified_backup_dir"
+        if [[ ! -d "${specified_backup_dir}" ]]; then
+            error "バックアップディレクトリが見つかりません: ${specified_backup_dir}"
             return 1
         fi
-        target_backup_dir="$specified_backup_dir"
+        target_backup_dir="${specified_backup_dir}"
     else
         # 最新のバックアップディレクトリを自動検索
-        target_backup_dir=$(find "$HOME" -maxdepth 1 -name ".dotfiles_backup_*" -type d | sort -r | head -1)
+        target_backup_dir=$(find "${HOME}" -maxdepth 1 -name ".dotfiles_backup_*" -type d | sort -r | head -1)
 
-        if [[ -z "$target_backup_dir" ]]; then
+        if [[ -z "${target_backup_dir}" ]]; then
             error "バックアップディレクトリが見つかりません"
             info "利用可能なバックアップ:"
-            find "$HOME" -maxdepth 1 -name ".dotfiles_backup_*" -type d | sort -r || echo "なし"
+            find "${HOME}" -maxdepth 1 -name ".dotfiles_backup_*" -type d | sort -r || echo "なし"
             return 1
         fi
 
-        info "最新バックアップ: $(basename "$target_backup_dir")"
+        info "最新バックアップ: $(basename "${target_backup_dir}")"
+    fi
+
+    # バックアップディレクトリの内容確認
+    if [[ ! "$(ls -A "${target_backup_dir}")" ]]; then
+        warning "バックアップディレクトリが空です: ${target_backup_dir}"
+        return 0
     fi
 
     warning "ロールバック実行"
     warning "現在のdotfilesが上書きされます"
-    info "復元元: $target_backup_dir"
+    info "復元元: ${target_backup_dir}"
 
     # 確認プロンプト
     echo -n "ロールバックしますか? [y/N]: "
     read -r response
-    case "$response" in
+    case "${response}" in
         [yY]|[yY][eE][sS])
             info "ロールバックを開始します"
             ;;
@@ -384,22 +445,46 @@ rollback() {
     esac
 
     local restored_count=0
+    local failed_count=0
+    local failed_files=()
 
     # バックアップファイルを復元
-    for backup_file in "$target_backup_dir"/*; do
-        if [[ -f "$backup_file" ]]; then
-            local filename="$(basename "$backup_file")"
-            if cp "$backup_file" "$HOME/$filename"; then
-                info "復元: $filename"
+    for backup_file in "${target_backup_dir}"/*; do
+        if [[ -f "${backup_file}" ]]; then
+            local filename="$(basename "${backup_file}")"
+
+            # ファイル名の検証（dotfilesのみ復元）
+            if [[ ! "${filename}" =~ ^\.[a-zA-Z0-9._-]+$ ]]; then
+                warning "無効なファイル名をスキップ: ${filename}"
+                continue
+            fi
+
+            # 復元先の確認
+            local restore_target="${HOME}/${filename}"
+            if [[ -e "${restore_target}" ]] && [[ ! -L "${restore_target}" ]]; then
+                warning "既存ファイルが存在します: ${filename}"
+                if ! ask_user_confirmation "既存ファイル ${filename} を上書きしますか？" false; then
+                    info "スキップ: ${filename}"
+                    continue
+                fi
+            fi
+
+            if cp "${backup_file}" "${restore_target}"; then
+                info "復元: ${filename}"
                 ((restored_count++))
             else
-                error "復元失敗: $filename"
+                error "復元失敗: ${filename}"
+                failed_files+=("${filename}")
+                ((failed_count++))
             fi
         fi
     done
 
-    if [[ $restored_count -gt 0 ]]; then
-        success "ロールバック完了 ($restored_count個)"
+    if [[ ${restored_count} -gt 0 ]]; then
+        success "ロールバック完了 (${restored_count}個)"
+        if [[ ${failed_count} -gt 0 ]]; then
+            warning "復元失敗: ${failed_files[*]}"
+        fi
     else
         warning "復元されたファイルがありません"
     fi
@@ -412,7 +497,7 @@ rollback() {
 # 使用方法表示
 show_help() {
     cat << EOF
-使用方法: $0 [オプション]
+使用方法: ${0} [オプション]
 
 オプション:
     -h, --help          このヘルプを表示
@@ -426,8 +511,14 @@ show_help() {
 
     注意: -f (--force) を指定しない場合、デフォルトで各ファイルの処理前に確認を求めます。
 
+除外ファイル:
+    インストール対象から除外したいファイルは .installignore に記載してください。
+    コメント行（#で始まる行）と空行は無視されます。
+    !で始まる行は除外解除（対象に含める）を意味します。
+    パターンはlongest matchで優先されます。
+
 バックアップ場所: ~/.dotfiles_backup_YYYYMMDD_HHMMSS/
-ログファイル: $SCRIPT_DIR/install.log
+ログファイル: ${SCRIPT_DIR}/install.log
 
 EOF
 }
@@ -440,72 +531,44 @@ dry_run() {
     local update_count=0
     local backup_count=0
     local create_count=0
+    local ignore_count=0
 
     # dotfilesのチェック
+    local exclude_list=($(load_exclude_list))
+
     while IFS= read -r -d '' file; do
-        local basename_file="$(basename "$file")"
+        local basename_file="$(basename "${file}")"
 
-        case "$basename_file" in
-            ".git"|".DS_Store"|".gitignore"|".gitmodules"|"install.sh")
-                continue
+        # 除外ファイルをスキップ
+        if is_excluded "${basename_file}" "${file}" "${exclude_list[@]}"; then
+            echo "[IGNORE] ${basename_file} (除外対象)"
+            ((ignore_count++))
+            continue
+        fi
+
+        check_symlink_status "${file}"
+        local status=$?
+
+        case $status in
+            0)  # スキップ
+                echo "[SKIP] ${basename_file} (既に正しいリンクが存在)"
+                ((skip_count++))
                 ;;
-            "CLAUDE.md")
-                # リポジトリルートの CLAUDE.md は除外、.claude/CLAUDE.md は対象
-                if [[ "$file" == "$SCRIPT_DIR/CLAUDE.md" ]]; then
-                    continue
-                fi
-                # .claude/CLAUDE.md の場合は通常処理に進む
-
-                check_symlink_status "$file"
-                local status=$?
-
-                case $status in
-                    0)  # スキップ
-                        echo "[SKIP] $basename_file (既に正しいリンクが存在)"
-                        ((skip_count++))
-                        ;;
-                    1)  # 更新
-                        local current_target="$(readlink "$HOME/$basename_file")"
-                        echo "[UPDATE] $basename_file (リンク先変更: $(basename "$current_target") -> $basename_file)"
-                        ((update_count++))
-                        ;;
-                    2)  # バックアップ
-                        echo "[BACKUP] $basename_file (既存ファイルをバックアップして置換)"
-                        ((backup_count++))
-                        ;;
-                    3)  # 新規作成
-                        echo "[CREATE] $basename_file (新規リンク作成)"
-                        ((create_count++))
-                        ;;
-                esac
+            1)  # 更新
+                local current_target="$(readlink "${HOME}/${basename_file}" 2>/dev/null || echo "unknown")"
+                echo "[UPDATE] ${basename_file} (リンク先変更: $(basename "${current_target}") -> ${basename_file})"
+                ((update_count++))
                 ;;
-            *)
-                # 同じ判定ロジックを使用
-                check_symlink_status "$file"
-                local status=$?
-
-                case $status in
-                    0)  # スキップ
-                        echo "[SKIP] $basename_file (既に正しいリンクが存在)"
-                        ((skip_count++))
-                        ;;
-                    1)  # 更新
-                        local current_target="$(readlink "$HOME/$basename_file")"
-                        echo "[UPDATE] $basename_file (リンク先変更: $(basename "$current_target") -> $basename_file)"
-                        ((update_count++))
-                        ;;
-                    2)  # バックアップ
-                        echo "[BACKUP] $basename_file (既存ファイルをバックアップして置換)"
-                        ((backup_count++))
-                        ;;
-                    3)  # 新規作成
-                        echo "[CREATE] $basename_file (新規リンク作成)"
-                        ((create_count++))
-                        ;;
-                esac
+            2)  # バックアップ
+                echo "[BACKUP] ${basename_file} (既存ファイルをバックアップして置換)"
+                ((backup_count++))
+                ;;
+            3)  # 新規作成
+                echo "[CREATE] ${basename_file} (新規リンク作成)"
+                ((create_count++))
                 ;;
         esac
-    done < <(find "$SCRIPT_DIR" -maxdepth 1 -name '.*' -type f -print0)
+    done < <(find "${SCRIPT_DIR}" -maxdepth 1 -name '.*' -type f -print0)
 
     # テンプレートディレクトリのチェック
     local template_dirs=("bin" "opt" "tools")
@@ -513,12 +576,12 @@ dry_run() {
     local template_copy=0
 
     for dir in "${template_dirs[@]}"; do
-        if [[ -d "$SCRIPT_DIR/template/$dir" ]]; then
-            if [[ -e "$HOME/$dir" ]]; then
-                echo "[SKIP] $dir (既に存在)"
+        if [[ -d "${SCRIPT_DIR}/template/${dir}" ]]; then
+            if [[ -e "${HOME}/${dir}" ]]; then
+                echo "[SKIP] ${dir} (既に存在)"
                 ((template_skip++))
             else
-                echo "[COPY] $dir (新規作成)"
+                echo "[COPY] ${dir} (新規作成)"
                 ((template_copy++))
             fi
         fi
@@ -527,13 +590,14 @@ dry_run() {
     echo
     info "=== 処理概要 ==="
     echo "dotfiles:"
-    echo "  スキップ: $skip_count個"
-    echo "  更新: $update_count個"
-    echo "  バックアップ: $backup_count個"
-    echo "  新規作成: $create_count個"
+    echo "  除外: ${ignore_count}個"
+    echo "  スキップ: ${skip_count}個"
+    echo "  更新: ${update_count}個"
+    echo "  バックアップ: ${backup_count}個"
+    echo "  新規作成: ${create_count}個"
     echo "テンプレートディレクトリ:"
-    echo "  スキップ: $template_skip個"
-    echo "  コピー: $template_copy個"
+    echo "  スキップ: ${template_skip}個"
+    echo "  コピー: ${template_copy}個"
 
     info "=== ドライラン完了 ==="
 }
@@ -582,15 +646,15 @@ main() {
     done
 
     # ログファイル初期化
-    : > "$LOG_FILE"
+    : > "${LOG_FILE}"
 
     info "=== dotfilesインストールスクリプト開始 ==="
-    log "スクリプトディレクトリ: $SCRIPT_DIR"
-    log "ホームディレクトリ: $HOME"
+    log "スクリプトディレクトリ: ${SCRIPT_DIR}"
+    log "ホームディレクトリ: ${HOME}"
 
     # ロールバックモード
-    if [[ "$rollback_mode" == true ]]; then
-        rollback "$rollback_dir"
+    if [[ "${rollback_mode}" == true ]]; then
+        rollback "${rollback_dir}"
         exit $?
     fi
 
@@ -600,13 +664,13 @@ main() {
     fi
 
     # ドライランモード
-    if [[ "$dry_run_mode" == true ]]; then
+    if [[ "${dry_run_mode}" == true ]]; then
         dry_run
         exit 0
     fi
 
     # 確認プロンプト
-    if [[ "$force" != true ]]; then
+    if [[ "${force}" != true ]]; then
         echo
         info "以下の処理を実行します:"
         echo "  1. 既存dotfilesのバックアップ"
@@ -615,7 +679,7 @@ main() {
         echo
         echo -n "続行しますか? [y/N]: "
         read -r response
-        case "$response" in
+        case "${response}" in
             [yY]|[yY][eE][sS])
                 info "インストールを開始します"
                 ;;
@@ -632,7 +696,7 @@ main() {
     # メイン処理実行
     local exit_code=0
 
-    if ! install_dotfiles "$force"; then
+    if ! install_dotfiles "${force}"; then
         error "dotfilesインストールでエラーが発生しました"
         exit_code=1
     fi
@@ -641,18 +705,18 @@ main() {
         warning "一部のテンプレートディレクトリでエラーが発生しました"
     fi
 
-    if [[ $exit_code -eq 0 ]]; then
+    if [[ ${exit_code} -eq 0 ]]; then
         success "=== インストール完了 ==="
-        info "バックアップ: $BACKUP_DIR"
-        info "ログ: $LOG_FILE"
+        info "バックアップ: ${BACKUP_DIR}"
+        info "ログ: ${LOG_FILE}"
         echo
-        info "ロールバックするには: $0 --rollback [バックアップディレクトリ]"
+        info "ロールバックするには: ${0} --rollback [バックアップディレクトリ]"
     else
         error "=== インストール失敗 ==="
-        info "ロールバックするには: $0 --rollback [バックアップディレクトリ]"
+        info "ロールバックするには: ${0} --rollback [バックアップディレクトリ]"
     fi
 
-    exit $exit_code
+    exit ${exit_code}
 }
 
 # ============================================================================
