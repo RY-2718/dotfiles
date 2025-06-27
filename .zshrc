@@ -17,7 +17,7 @@
 # キーバインド:
 #   Ctrl+R: 履歴検索 (fzf)
 #   Ctrl+T: ファイル検索 (fzf)
-#   Ctrl+F: ディレクトリ検索 + 移動 (fzf)
+#   Ctrl+G: ディレクトリ検索 + 移動 (fzf)
 #   ↑/↓:   部分一致履歴検索 (zsh-history-substring-search)
 #   →:     自動提案受け入れ (zsh-autosuggestions)
 #
@@ -77,8 +77,7 @@ if type fzf > /dev/null 2>&1; then
     zle -N fzf-file-widget
     bindkey '^T' fzf-file-widget
 
-    # ディレクトリ検索 + 移動 (Ctrl+F)
-    # 使い方: Ctrl+Fでディレクトリ選択、選択したディレクトリに自動でcd
+    # ディレクトリ検索 + 移動 (Ctrl+G)
     function fzf-cd-widget() {
         local selected
         selected=$(find . -type d 2>/dev/null | fzf --height=40% --reverse --border)
@@ -90,7 +89,8 @@ if type fzf > /dev/null 2>&1; then
     }
 
     zle -N fzf-cd-widget
-    bindkey '^F' fzf-cd-widget
+    bindkey '^G' fzf-cd-widget
+
 
 else
     echo "🚨 fzfがインストールされていません。高機能な検索のためにインストールを推奨します。"
