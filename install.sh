@@ -32,19 +32,19 @@ log() {
 }
 
 info() {
-    echo -e "${BLUE}[INFO]${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${BLUE}ℹ${NC} $*" | tee -a "$LOG_FILE"
 }
 
 success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${GREEN}✓${NC} $*" | tee -a "$LOG_FILE"
 }
 
 warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${YELLOW}⚠${NC} $*" | tee -a "$LOG_FILE"
 }
 
 error() {
-    echo -e "${RED}[ERROR]${NC} $*" | tee -a "$LOG_FILE"
+    echo -e "${RED}✗${NC} $*" | tee -a "$LOG_FILE"
 }
 
 # ============================================================================
@@ -81,7 +81,7 @@ ask_user_confirmation() {
             ;;
         *)
             # 無効な入力の場合は再度確認
-            warning "無効な入力です。y/n または Y/N で回答してください。"
+            warning "無効な入力です。y/n で回答してください。"
             ask_user_confirmation "$message" "$default_yes"
             ;;
     esac
@@ -111,7 +111,7 @@ check_dependencies() {
 create_backup_dir() {
     if [[ ! -d "$BACKUP_DIR" ]]; then
         mkdir -p "$BACKUP_DIR"
-        info "バックアップディレクトリ作成: $BACKUP_DIR"
+        info "バックアップ作成: $BACKUP_DIR"
     fi
 }
 
@@ -168,7 +168,7 @@ create_symlink() {
     local source="$1"
     local target="$HOME/$(basename "$source")"
     local basename_file="$(basename "$source")"
-    local interactive="${2:-false}"
+    local force="${2:-false}"
 
     # ソースファイルの存在確認
     if [[ ! -e "$source" ]]; then
@@ -189,10 +189,10 @@ create_symlink() {
             local current_target="$(readlink "$target")"
             info "既存リンクの更新対象: $basename_file ($(basename "$current_target") -> $basename_file)"
 
-            # インタラクティブモードの場合は確認
-            if [[ "$interactive" == true ]]; then
+            # forceオプション指定時以外は確認
+            if [[ "$force" != true ]]; then
                 if ! ask_user_confirmation "既存のシンボリックリンク $basename_file を更新しますか？" true; then
-                    info "スキップ: $basename_file (ユーザーが拒否)"
+                    info "スキップ: $basename_file"
                     return 0
                 fi
             fi
@@ -201,12 +201,12 @@ create_symlink() {
             rm -f "$target"
             ;;
         2)  # バックアップ
-            info "既存ファイルのバックアップ対象: $basename_file"
+            info "バックアップ: $basename_file"
 
-            # インタラクティブモードの場合は確認
-            if [[ "$interactive" == true ]]; then
+            # forceオプション指定時以外は確認
+            if [[ "$force" != true ]]; then
                 if ! ask_user_confirmation "既存ファイル $basename_file をバックアップして置き換えますか？" true; then
-                    info "スキップ: $basename_file (ユーザーが拒否)"
+                    info "スキップ: $basename_file"
                     return 0
                 fi
             fi
@@ -215,10 +215,10 @@ create_symlink() {
             rm -f "$target"
             ;;
         3)  # 新規作成
-            if [[ "$interactive" == true ]]; then
-                info "新規作成対象: $basename_file"
+            if [[ "$force" != true ]]; then
+                info "新規作成: $basename_file"
                 if ! ask_user_confirmation "新しいシンボリックリンク $basename_file を作成しますか？" true; then
-                    info "スキップ: $basename_file (ユーザーが拒否)"
+                    info "スキップ: $basename_file"
                     return 0
                 fi
             fi
@@ -227,9 +227,9 @@ create_symlink() {
 
     # シンボリックリンク作成
     if ln -sf "$source" "$target"; then
-        success "リンク作成: $basename_file"
+        success "作成: $basename_file"
     else
-        error "リンク作成失敗: $basename_file"
+        error "作成失敗: $basename_file"
         return 1
     fi
 }
@@ -255,9 +255,9 @@ copy_template_dir() {
     fi
 
     if cp -r "$source" "$target"; then
-        success "ディレクトリコピー: $dir_name"
+        success "コピー: $dir_name"
     else
-        error "ディレクトリコピー失敗: $dir_name"
+        error "コピー失敗: $dir_name"
         return 1
     fi
 }
@@ -270,7 +270,7 @@ copy_template_dir() {
 install_dotfiles() {
     local dotfiles=()
     local failed_files=()
-    local interactive="${1:-false}"
+    local force="${1:-false}"
 
     # dotfilesファイルリストを取得（除外ファイルを除く）
     while IFS= read -r -d '' file; do
@@ -295,25 +295,25 @@ install_dotfiles() {
         esac
     done < <(find "$SCRIPT_DIR" -maxdepth 1 -name '.*' -type f -print0)
 
-    info "dotfilesインストール開始 (${#dotfiles[@]}個のファイル)"
+    info "dotfilesインストール開始 (${#dotfiles[@]}個)"
 
-    if [[ "$interactive" == true ]]; then
-        info "インタラクティブモード: ファイルごとに確認します"
+    if [[ "$force" != true ]]; then
+        info "インタラクティブモード"
     fi
 
     # 各dotfileのシンボリックリンクを作成
     for file in "${dotfiles[@]}"; do
-        if ! create_symlink "$file" "$interactive"; then
+        if ! create_symlink "$file" "$force"; then
             failed_files+=("$(basename "$file")")
         fi
     done
 
     if [[ ${#failed_files[@]} -gt 0 ]]; then
-        error "失敗したファイル: ${failed_files[*]}"
+        error "失敗: ${failed_files[*]}"
         return 1
     fi
 
-    success "全dotfilesのインストール完了"
+    success "dotfilesインストール完了"
 }
 
 # テンプレートディレクトリのインストール
@@ -330,10 +330,10 @@ install_template_dirs() {
     done
 
     if [[ ${#failed_dirs[@]} -gt 0 ]]; then
-        warning "失敗したディレクトリ: ${failed_dirs[*]}"
+        warning "失敗: ${failed_dirs[*]}"
     fi
 
-    success "テンプレートディレクトリインストール完了"
+    success "テンプレートディレクトリ完了"
 }
 
 # ============================================================================
@@ -348,7 +348,7 @@ rollback() {
     if [[ -n "$specified_backup_dir" ]]; then
         # 指定されたバックアップディレクトリを使用
         if [[ ! -d "$specified_backup_dir" ]]; then
-            error "指定されたバックアップディレクトリが見つかりません: $specified_backup_dir"
+            error "バックアップディレクトリが見つかりません: $specified_backup_dir"
             return 1
         fi
         target_backup_dir="$specified_backup_dir"
@@ -358,20 +358,20 @@ rollback() {
 
         if [[ -z "$target_backup_dir" ]]; then
             error "バックアップディレクトリが見つかりません"
-            info "利用可能なバックアップディレクトリ:"
+            info "利用可能なバックアップ:"
             find "$HOME" -maxdepth 1 -name ".dotfiles_backup_*" -type d | sort -r || echo "なし"
             return 1
         fi
 
-        info "最新のバックアップを使用: $(basename "$target_backup_dir")"
+        info "最新バックアップ: $(basename "$target_backup_dir")"
     fi
 
-    warning "ロールバックを実行します..."
-    warning "この操作により現在のdotfilesが上書きされます"
+    warning "ロールバック実行"
+    warning "現在のdotfilesが上書きされます"
     info "復元元: $target_backup_dir"
 
     # 確認プロンプト
-    echo -n "本当にロールバックしますか? [y/N]: "
+    echo -n "ロールバックしますか? [y/N]: "
     read -r response
     case "$response" in
         [yY]|[yY][eE][sS])
@@ -399,7 +399,7 @@ rollback() {
     done
 
     if [[ $restored_count -gt 0 ]]; then
-        success "ロールバック完了 ($restored_count個のファイルを復元)"
+        success "ロールバック完了 ($restored_count個)"
     else
         warning "復元されたファイルがありません"
     fi
@@ -417,14 +417,13 @@ show_help() {
 オプション:
     -h, --help          このヘルプを表示
     -f, --force         確認なしで実行
-    -i, --interactive   ファイルごとに個別に確認
     -d, --dry-run       実際の処理を行わずにプレビューのみ
     --rollback [DIR]    バックアップからロールバック (DIR省略時は最新を使用)
 
 説明:
     このスクリプトはdotfilesを安全にインストールします。
     既存ファイルは自動的にバックアップされます。
-    
+
     注意: -f (--force) を指定しない場合、デフォルトで各ファイルの処理前に確認を求めます。
 
 バックアップ場所: ~/.dotfiles_backup_YYYYMMDD_HHMMSS/
@@ -548,7 +547,6 @@ main() {
     local force=false
     local dry_run_mode=false
     local rollback_mode=false
-    local interactive=false
     local rollback_dir=""
 
     # 引数解析
@@ -564,10 +562,6 @@ main() {
                 ;;
             -d|--dry-run)
                 dry_run_mode=true
-                shift
-                ;;
-            -i|--interactive)
-                interactive=true
                 shift
                 ;;
             --rollback)
@@ -635,15 +629,10 @@ main() {
     # バックアップディレクトリ作成
     create_backup_dir
 
-    # インタラクティブモードの決定（forceが指定されていない場合はinteractiveをデフォルトに）
-    if [[ "$force" != true && "$interactive" != true ]]; then
-        interactive=true
-    fi
-
     # メイン処理実行
     local exit_code=0
 
-    if ! install_dotfiles "$interactive"; then
+    if ! install_dotfiles "$force"; then
         error "dotfilesインストールでエラーが発生しました"
         exit_code=1
     fi
@@ -655,7 +644,7 @@ main() {
     if [[ $exit_code -eq 0 ]]; then
         success "=== インストール完了 ==="
         info "バックアップ: $BACKUP_DIR"
-        info "ログファイル: $LOG_FILE"
+        info "ログ: $LOG_FILE"
         echo
         info "ロールバックするには: $0 --rollback [バックアップディレクトリ]"
     else
