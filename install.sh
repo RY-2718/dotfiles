@@ -16,6 +16,11 @@ readonly BACKUP_DIR="${HOME}/.dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
 readonly LOG_FILE="${SCRIPT_DIR}/install.log"
 readonly IGNORE_FILE="${SCRIPT_DIR}/.installignore"
 
+# 一時ファイル管理
+readonly TEMP_DIR="${SCRIPT_DIR}/.temp"
+readonly TEMP_EXCLUDE_FILE="${TEMP_DIR}/exclude_list.txt"
+readonly TEMP_FILES_LOG="${TEMP_DIR}/temp_files.log"
+
 # 色付きメッセージ用の定数
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
@@ -51,6 +56,48 @@ error() {
 # ============================================================================
 # ユーティリティ関数
 # ============================================================================
+
+# 一時ディレクトリの初期化
+init_temp_dir() {
+    if [[ ! -d "${TEMP_DIR}" ]]; then
+        mkdir -p "${TEMP_DIR}"
+        info "一時ディレクトリ作成: ${TEMP_DIR}"
+    fi
+
+    # 一時ファイルログを初期化
+    : > "${TEMP_FILES_LOG}"
+}
+
+# 一時ファイルを登録
+register_temp_file() {
+    local file="${1}"
+    echo "${file}" >> "${TEMP_FILES_LOG}"
+}
+
+# 一時ファイルのクリーンアップ
+cleanup_temp_files() {
+    if [[ -f "${TEMP_FILES_LOG}" ]]; then
+        while IFS= read -r temp_file; do
+            if [[ -n "${temp_file}" && -f "${temp_file}" ]]; then
+                rm -f "${temp_file}"
+                log "一時ファイル削除: ${temp_file}"
+            fi
+        done < "${TEMP_FILES_LOG}"
+    fi
+
+    # 一時ディレクトリが空になったら削除
+    if [[ -d "${TEMP_DIR}" ]] && [[ -z "$(ls -A "${TEMP_DIR}")" ]]; then
+        rmdir "${TEMP_DIR}"
+        info "一時ディレクトリ削除: ${TEMP_DIR}"
+    fi
+}
+
+# クリーンアップ専用関数（外部から呼び出し可能）
+cleanup() {
+    info "クリーンアップ開始"
+    cleanup_temp_files
+    success "クリーンアップ完了"
+}
 
 # ユーザーに Y/n の確認を求める関数
 ask_user_confirmation() {
@@ -145,7 +192,8 @@ backup_file() {
 #   3: ファイルが存在しない (新規作成)
 check_symlink_status() {
     local source="${1}"
-    local target="${HOME}/$(basename "${source}")"
+    local relative_path="${source#${SCRIPT_DIR}/}"
+    local target="${HOME}/${relative_path}"
 
     if [[ -L "${target}" ]]; then
         # シンボリックリンクのリンク先を取得
@@ -167,7 +215,8 @@ check_symlink_status() {
 # シンボリックリンクの作成
 create_symlink() {
     local source="${1}"
-    local target="${HOME}/$(basename "${source}")"
+    local relative_path="${source#${SCRIPT_DIR}/}"
+    local target="${HOME}/${relative_path}"
     local basename_file="$(basename "${source}")"
     local force="${2:-false}"
 
@@ -183,43 +232,43 @@ create_symlink() {
 
     case $status in
         0)  # スキップ
-            info "スキップ: ${basename_file} (既に正しいリンクが存在)"
+            info "スキップ: ${relative_path} (既に正しいリンクが存在)"
             return 0
             ;;
         1)  # 更新
             local current_target="$(readlink "${target}")"
-            info "既存リンクの更新対象: ${basename_file} ($(basename "${current_target}") -> ${basename_file})"
+            info "既存リンクの更新対象: ${relative_path} ($(basename "${current_target}") -> ${basename_file})"
 
             # forceオプション指定時以外は確認
             if [[ "${force}" != true ]]; then
-                if ! ask_user_confirmation "既存のシンボリックリンク ${basename_file} を更新しますか？" true; then
-                    info "スキップ: ${basename_file}"
+                if ! ask_user_confirmation "既存のシンボリックリンク ${relative_path} を更新しますか？" true; then
+                    info "スキップ: ${relative_path}"
                     return 0
                 fi
             fi
 
-            backup_file "${basename_file}"
+            backup_file "${relative_path}"
             rm -f "${target}"
             ;;
         2)  # バックアップ
-            info "バックアップ: ${basename_file}"
+            info "バックアップ: ${relative_path}"
 
             # forceオプション指定時以外は確認
             if [[ "${force}" != true ]]; then
-                if ! ask_user_confirmation "既存ファイル ${basename_file} をバックアップして置き換えますか？" true; then
-                    info "スキップ: ${basename_file}"
+                if ! ask_user_confirmation "既存ファイル ${relative_path} をバックアップして置き換えますか？" true; then
+                    info "スキップ: ${relative_path}"
                     return 0
                 fi
             fi
 
-            backup_file "${basename_file}"
+            backup_file "${relative_path}"
             rm -f "${target}"
             ;;
         3)  # 新規作成
             if [[ "${force}" != true ]]; then
-                info "新規作成: ${basename_file}"
-                if ! ask_user_confirmation "新しいシンボリックリンク ${basename_file} を作成しますか？" true; then
-                    info "スキップ: ${basename_file}"
+                info "新規作成: ${relative_path}"
+                if ! ask_user_confirmation "新しいシンボリックリンク ${relative_path} を作成しますか？" true; then
+                    info "スキップ: ${relative_path}"
                     return 0
                 fi
             fi
@@ -227,10 +276,21 @@ create_symlink() {
     esac
 
     # シンボリックリンク作成
+    # 親ディレクトリが存在しない場合は作成
+    local target_dir="$(dirname "${target}")"
+    if [[ ! -d "${target_dir}" ]]; then
+        if mkdir -p "${target_dir}"; then
+            info "ディレクトリ作成: ${target_dir#${HOME}/}"
+        else
+            error "ディレクトリ作成失敗: ${target_dir}"
+            return 1
+        fi
+    fi
+
     if ln -sf "${source}" "${target}"; then
-        success "作成: ${basename_file}"
+        success "作成: ${relative_path}"
     else
-        error "作成失敗: ${basename_file}"
+        error "作成失敗: ${relative_path}"
         return 1
     fi
 }
@@ -284,14 +344,20 @@ load_exclude_list() {
         info "除外ファイル読み込み: ${IGNORE_FILE}"
     fi
 
-    echo "${exclude_list[@]}"
+    # 一時ファイルに出力
+    printf '%s\n' "${exclude_list[@]}" > "${TEMP_EXCLUDE_FILE}"
+    register_temp_file "${TEMP_EXCLUDE_FILE}"
+
+    # 一時ファイルのパスを返す
+    echo "${TEMP_EXCLUDE_FILE}"
 }
 
 # ファイルが除外リストに含まれているかチェック
 is_excluded() {
     local filename="${1}"
     local filepath="${2}"  # フルパスを追加
-    local exclude_list=("${@:3}")
+    shift 2
+    local exclude_list=("${@}")
 
     local is_excluded=false
     local longest_match=""
@@ -300,11 +366,21 @@ is_excluded() {
         # パターンがファイル名またはパスにマッチするかチェック
         local matches=false
 
-        if [[ "${filename}" == "${pattern}" ]] || [[ "${filepath}" == "${pattern}" ]]; then
+        # ファイル名の完全一致
+        if [[ "${filename}" == "${pattern}" ]]; then
             matches=true
+        # パスの完全一致
+        elif [[ "${filepath}" == "${pattern}" ]]; then
+            matches=true
+        # ワイルドカードパターンの処理
         elif [[ "${pattern}" == *"*"* ]]; then
-            # ワイルドカードパターンの処理
             if [[ "${filename}" == ${pattern} ]] || [[ "${filepath}" == ${pattern} ]]; then
+                matches=true
+            fi
+        # ディレクトリパターン（末尾が/の場合）
+        elif [[ "${pattern}" == */ ]]; then
+            local dir_pattern="${pattern%/}"
+            if [[ "${filepath}" == "${dir_pattern}"/* ]] || [[ "${filepath}" == "${dir_pattern}" ]]; then
                 matches=true
             fi
         fi
@@ -337,18 +413,29 @@ install_dotfiles() {
     local force="${1:-false}"
 
     # dotfilesファイルリストを取得（除外ファイルを除く）
-    local exclude_list=($(load_exclude_list))
+    local exclude_file="$(load_exclude_list)"
+    local exclude_list=()
+    while IFS= read -r line; do
+        exclude_list+=("${line}")
+    done < "${exclude_file}"
 
+    # 再帰的にファイルを検索
     while IFS= read -r -d '' file; do
         local basename_file="$(basename "${file}")"
+        local relative_path="${file#${SCRIPT_DIR}/}"
+
+        # .temp をスキップ
+        if [[ "${basename_file}" == ".temp" ]]; then
+            continue
+        fi
 
         # 除外ファイルをスキップ
-        if is_excluded "${basename_file}" "${file}" "${exclude_list[@]}"; then
+        if is_excluded "${basename_file}" "${relative_path}" "${exclude_list[@]}"; then
             continue
         fi
 
         dotfiles+=("${file}")
-    done < <(find "${SCRIPT_DIR}" -maxdepth 1 -name '.*' -type f -print0)
+    done < <(find "${SCRIPT_DIR}" -type f -name '.*' -print0)
 
     info "dotfilesインストール開始 (${#dotfiles[@]}個)"
 
@@ -504,6 +591,7 @@ show_help() {
     -f, --force         確認なしで実行
     -d, --dry-run       実際の処理を行わずにプレビューのみ
     --rollback [DIR]    バックアップからロールバック (DIR省略時は最新を使用)
+    --cleanup           一時ファイルをクリーンアップして終了
 
 説明:
     このスクリプトはdotfilesを安全にインストールします。
@@ -534,14 +622,19 @@ dry_run() {
     local ignore_count=0
 
     # dotfilesのチェック
-    local exclude_list=($(load_exclude_list))
+    local exclude_file="$(load_exclude_list)"
+    local exclude_list=()
+    while IFS= read -r line; do
+        exclude_list+=("${line}")
+    done < "${exclude_file}"
 
     while IFS= read -r -d '' file; do
         local basename_file="$(basename "${file}")"
+        local relative_path="${file#${SCRIPT_DIR}/}"
 
         # 除外ファイルをスキップ
-        if is_excluded "${basename_file}" "${file}" "${exclude_list[@]}"; then
-            echo "[IGNORE] ${basename_file} (除外対象)"
+        if is_excluded "${basename_file}" "${relative_path}" "${exclude_list[@]}"; then
+            echo "[IGNORE] ${relative_path} (除外対象)"
             ((ignore_count++))
             continue
         fi
@@ -551,24 +644,24 @@ dry_run() {
 
         case $status in
             0)  # スキップ
-                echo "[SKIP] ${basename_file} (既に正しいリンクが存在)"
+                echo "[SKIP] ${relative_path} (既に正しいリンクが存在)"
                 ((skip_count++))
                 ;;
             1)  # 更新
-                local current_target="$(readlink "${HOME}/${basename_file}" 2>/dev/null || echo "unknown")"
-                echo "[UPDATE] ${basename_file} (リンク先変更: $(basename "${current_target}") -> ${basename_file})"
+                local current_target="$(readlink "${HOME}/${relative_path}" 2>/dev/null || echo "unknown")"
+                echo "[UPDATE] ${relative_path} (リンク先変更: $(basename "${current_target}") -> ${basename_file})"
                 ((update_count++))
                 ;;
             2)  # バックアップ
-                echo "[BACKUP] ${basename_file} (既存ファイルをバックアップして置換)"
+                echo "[BACKUP] ${relative_path} (既存ファイルをバックアップして置換)"
                 ((backup_count++))
                 ;;
             3)  # 新規作成
-                echo "[CREATE] ${basename_file} (新規リンク作成)"
+                echo "[CREATE] ${relative_path} (新規リンク作成)"
                 ((create_count++))
                 ;;
         esac
-    done < <(find "${SCRIPT_DIR}" -maxdepth 1 -name '.*' -type f -print0)
+    done < <(find "${SCRIPT_DIR}" -type f -name '.*' -print0)
 
     # テンプレートディレクトリのチェック
     local template_dirs=("bin" "opt" "tools")
@@ -637,6 +730,10 @@ main() {
                     shift
                 fi
                 ;;
+            --cleanup)
+                cleanup
+                exit 0
+                ;;
             *)
                 error "不明なオプション: $1"
                 show_help
@@ -648,6 +745,9 @@ main() {
     # ログファイル初期化
     : > "${LOG_FILE}"
 
+    # 一時ディレクトリ初期化
+    init_temp_dir
+
     info "=== dotfilesインストールスクリプト開始 ==="
     log "スクリプトディレクトリ: ${SCRIPT_DIR}"
     log "ホームディレクトリ: ${HOME}"
@@ -655,17 +755,21 @@ main() {
     # ロールバックモード
     if [[ "${rollback_mode}" == true ]]; then
         rollback "${rollback_dir}"
-        exit $?
+        local exit_code=$?
+        cleanup_temp_files
+        exit ${exit_code}
     fi
 
     # 依存関係チェック
     if ! check_dependencies; then
+        cleanup_temp_files
         exit 1
     fi
 
     # ドライランモード
     if [[ "${dry_run_mode}" == true ]]; then
         dry_run
+        cleanup_temp_files
         exit 0
     fi
 
@@ -685,6 +789,7 @@ main() {
                 ;;
             *)
                 info "インストールをキャンセルしました"
+                cleanup_temp_files
                 exit 0
                 ;;
         esac
@@ -716,6 +821,9 @@ main() {
         info "ロールバックするには: ${0} --rollback [バックアップディレクトリ]"
     fi
 
+    # クリーンアップ実行
+    cleanup_temp_files
+
     exit ${exit_code}
 }
 
@@ -724,7 +832,10 @@ main() {
 # ============================================================================
 
 # エラー時のトラップ処理
-trap 'error "スクリプトが予期しないエラーで終了しました"; exit 1' ERR
+trap 'error "スクリプトが予期しないエラーで終了しました"; cleanup_temp_files; exit 1' ERR
+
+# 中断時のトラップ処理
+trap 'warning "スクリプトが中断されました"; cleanup_temp_files; exit 130' INT TERM
 
 # スクリプト実行
 main "$@"

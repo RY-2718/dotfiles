@@ -4,5 +4,6 @@
 .vim/bundle
 .vim/.netrwhist
 
-# dotfiles install script logs
+# dotfiles install script
 install.log
+.temp
