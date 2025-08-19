@@ -8,11 +8,11 @@
 #   - 高度な履歴管理 (50,000エントリ、重複除去、タイムスタンプ)
 #   - fzf統合 (履歴・ファイル・ディレクトリ検索)
 #   - 強化された補完システム (メニュー選択、色付き表示)
-#   - zplugによるプラグイン管理
+#   - Zinitによるプラグイン管理 (高速・軽量)
 #
 # インストール要件:
 #   - fzf
-#   - zplug: 自動インストールプロンプトあり
+#   - Zinit
 #
 # キーバインド:
 #   Ctrl+R: 履歴検索 (fzf)
@@ -90,7 +90,6 @@ if type fzf > /dev/null 2>&1; then
 
     zle -N fzf-cd-widget
     bindkey '^G' fzf-cd-widget
-
 
 else
     echo "🚨 fzfがインストールされていません。高機能な検索のためにインストールを推奨します。"
@@ -184,7 +183,7 @@ zstyle ':completion:*:*:kill:*' menu yes select
 zstyle ':completion:*:kill:*' force-list always
 
 # ============================================================================
-# zplug - プラグイン管理
+# Zinit - プラグイン管理
 # ============================================================================
 #
 # 導入されるプラグイン:
@@ -194,48 +193,59 @@ zstyle ':completion:*:kill:*' force-list always
 #   - zsh-history-substring-search: 部分文字列での履歴検索 (↑↓キー)
 #   - pure: ミニマルなプロンプトテーマ
 #
-# インストール:
-#   curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
-#
 # 使い方:
 #   - →キー: 自動提案を受け入れ
 #   - ↑↓キー: 入力中の文字列で履歴を部分検索
 #   - コマンド入力中: リアルタイムでシンタックスハイライト
 #
-if type zplug > /dev/null 2>&1; then
-    zplug "zsh-users/zsh-autosuggestions"              # コマンド自動提案
-    zplug "mafredri/zsh-async", from:github            # 非同期処理用
-    zplug "sindresorhus/pure", use:pure.zsh, from:github, as:theme  # ミニマルテーマ
-    zplug "zsh-users/zsh-syntax-highlighting"          # シンタックスハイライト
-    zplug "zsh-users/zsh-completions"                  # 追加補完定義
-    zplug "zsh-users/zsh-history-substring-search"    # 履歴のsubstring検索
+# インストール方法:
+#   macOS: brew install zinit
+#   Ubuntu/Debian: sudo apt install zinit
+#   Arch Linux: pacman -S zinit
+#   その他: curl -sL https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh | bash
+#
+if command -v zinit >/dev/null 2>&1; then
+    # プラグインの読み込み
+    zinit light zsh-users/zsh-autosuggestions              # コマンド自動提案
+    zinit light zsh-users/zsh-syntax-highlighting          # シンタックスハイライト
+    zinit light zsh-users/zsh-completions                  # 追加補完定義
+    zinit light zsh-users/zsh-history-substring-search     # 履歴のsubstring検索
 
-    # 未インストールプラグインの自動インストール
-    if ! zplug check --verbose; then
-        printf "Install missing plugins? [y/N]: "
-        if read -q; then
-            echo; zplug install
-        fi
-    fi
+    # Pureプロンプトテーマの読み込み
+    zinit ice pick"async.zsh" src"pure.zsh" # with zsh-async library that's bundled with it.
+    zinit light sindresorhus/pure
 
-    # プラグイン読み込み
-    zplug load
+    # zsh-autosuggestions の設定
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=240'              # 薄いグレーで表示
+    ZSH_AUTOSUGGEST_STRATEGY=(history completion)        # 履歴と補完から提案
 
     # zsh-history-substring-search のキーバインド設定
     # ↑↓キーで入力中の文字列に基づく履歴検索
-    if zplug check "zsh-users/zsh-history-substring-search"; then
-        bindkey '^[[A' history-substring-search-up    # ↑キー
-        bindkey '^[[B' history-substring-search-down  # ↓キー
-    fi
+    bindkey '^[[A' history-substring-search-up    # ↑キー
+    bindkey '^[[B' history-substring-search-down  # ↓キー
 
-    # zsh-autosuggestions の見た目設定
-    if zplug check "zsh-users/zsh-autosuggestions"; then
-        ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=240'              # 薄いグレーで表示
-        ZSH_AUTOSUGGEST_STRATEGY=(history completion)        # 履歴と補完から提案
-    fi
+    # 補完の再読み込み（zsh-completionsのため）
+    zinit cdreplay -q
+
 else
-    echo "zplugがインストールされていません。高機能なzsh環境のために導入を推奨します。"
+    echo "Zinitがインストールされていません。高機能なzsh環境のために導入を推奨します。"
+    echo ""
     echo "インストールコマンド:"
-    echo "curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh"
-fi
 
+    # OS検出してインストールコマンドを表示
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "  macOS (Homebrew): brew install zinit"
+    elif [[ -f /etc/debian_version ]]; then
+        echo "  Ubuntu/Debian: sudo apt update && sudo apt install zinit"
+    elif [[ -f /etc/arch-release ]]; then
+        echo "  Arch Linux: sudo pacman -S zinit"
+    elif [[ -f /etc/redhat-release ]]; then
+        echo "  RHEL/CentOS/Fedora: sudo dnf install zinit"
+    else
+        echo "  その他のLinux: curl -sL https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh | bash"
+    fi
+
+    echo ""
+    echo "インストール後、新しいターミナルセッションを開始してください。"
+    echo ""
+fi
