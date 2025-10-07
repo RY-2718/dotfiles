@@ -6,6 +6,7 @@ Dotfiles Installer - Python版
 既存のinstall.shの機能をPythonで再実装
 """
 
+
 import argparse
 import logging
 import os
@@ -13,9 +14,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from lib.config import Config
-from lib.installer import DotfilesInstaller
-from lib.logger import ColoredLogger
+from scripts.pkg.config import Config
+from scripts.pkg.installer import DotfilesInstaller
+from scripts.pkg.logger import ColoredLogger
 
 
 def create_argument_parser():
