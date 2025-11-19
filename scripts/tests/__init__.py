@@ -1,0 +1,1 @@
+"""Dotfiles installer test suite."""
