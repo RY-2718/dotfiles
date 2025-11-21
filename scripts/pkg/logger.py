@@ -150,7 +150,3 @@ class ColoredLogger:
         self.logger.setLevel(level)
 
 
-# 便利関数
-def get_logger(name: str, log_file: Optional[Path] = None) -> ColoredLogger:
-    """ロガーインスタンスを取得"""
-    return ColoredLogger(name, log_file)

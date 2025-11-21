@@ -45,22 +45,3 @@ class BackupManager:
             info_path.write_text(str(link_target))
         else:
             shutil.copy2(source, destination)
-
-    def available_archives(self) -> list[Path]:
-        """既存のバックアップディレクトリ一覧を新しい順で返す."""
-
-        if not self.rollbacks_root.exists():
-            return []
-        archives = [p for p in self.rollbacks_root.iterdir() if p.is_dir()]
-        return sorted(archives, reverse=True)
-
-    def resolve_archive(self, name: Optional[str]) -> Optional[Path]:
-        """指定名のアーカイブパスを取得（未指定時は最新）。"""
-
-        archives = self.available_archives()
-        if not archives:
-            return None
-        if not name:
-            return archives[0]
-        candidate = self.rollbacks_root / name
-        return candidate if candidate.exists() else None

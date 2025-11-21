@@ -9,19 +9,6 @@ from typing import Any, Iterable, Optional
 
 
 @dataclass
-class RollbackChoice:
-    """ロールバック対象の1件."""
-
-    archive_path: Path
-    relative_path: Path
-    is_symlink: bool
-
-    @property
-    def target_path(self) -> Path:
-        return self.archive_path.parent.parent / self.relative_path
-
-
-@dataclass
 class RollbackManager:
     """ロールバックアーカイブの適用を管理."""
 
