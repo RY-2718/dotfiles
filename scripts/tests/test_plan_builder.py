@@ -156,7 +156,7 @@ class TestPlanBuilder(unittest.TestCase):
         self.assertEqual(summary.ensure_dirs, 2)
         self.assertEqual(summary.creates, 3)  # .zshrc, test.conf, nested.conf (.vimrcはSKIP)
         self.assertEqual(summary.updates, 1)  # .bashrc
-        self.assertEqual(summary.skips, 1)    # .vimrc
+        self.assertEqual(summary.skips, 1)  # .vimrc
         self.assertEqual(summary.errors, 0)
         self.assertEqual(summary.total, 7)
 

@@ -99,7 +99,9 @@ def main() -> int:
         # source/ が存在しない場合はエラー
         if not source_dir.exists():
             print(f"エラー: source/ ディレクトリが見つかりません: {source_dir}")
-            print("\nsource/ ディレクトリを作成して、インストールしたいファイルを配置してください。")
+            print(
+                "\nsource/ ディレクトリを作成して、インストールしたいファイルを配置してください。"
+            )
             return 1
 
         # UI・ログ設定
@@ -107,7 +109,8 @@ def main() -> int:
         logger = ColoredLogger(name="dotfiles_installer")
         if args.verbose:
             import logging
-            logger.setLevel(logging.DEBUG)
+
+            logger.set_level(logging.DEBUG)
 
         # ロールバックモード
         if args.rollback is not None:
@@ -136,7 +139,9 @@ def main() -> int:
                         # ユーザーに選択させる
                         while True:
                             try:
-                                choice = input(f"ロールバックするバックアップを選択 (1-{len(archives)}, Enter=1): ").strip()
+                                choice = input(
+                                    f"ロールバックするバックアップを選択 (1-{len(archives)}, Enter=1): "
+                                ).strip()
                                 if not choice:
                                     choice = "1"
                                 idx = int(choice) - 1
@@ -260,6 +265,7 @@ def main() -> int:
     except Exception as e:
         print(f"\n予期しないエラー: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 1
 

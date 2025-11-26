@@ -5,7 +5,6 @@
 """
 
 import sys
-from typing import Optional
 
 
 class UserInterface:
@@ -37,11 +36,11 @@ class UserInterface:
             try:
                 response = input(prompt).strip().lower()
 
-                if response in ('y', 'yes'):
+                if response in ("y", "yes"):
                     return True
-                elif response in ('n', 'no'):
+                elif response in ("n", "no"):
                     return False
-                elif response == '':
+                elif response == "":
                     return default_yes
                 else:
                     print("無効な入力です。y/n で回答してください。")
@@ -53,7 +52,7 @@ class UserInterface:
                 print("\n入力が終了しました")
                 return False
 
-    def select_from_list(self, items: list, message: str) -> Optional[str]:
+    def select_from_list(self, items: list, message: str) -> str | None:
         """
         リストから項目を選択
 
@@ -77,9 +76,9 @@ class UserInterface:
 
         while True:
             try:
-                response = input("選択してください [1-{}]: ".format(len(items))).strip()
+                response = input(f"選択してください [1-{len(items)}]: ").strip()
 
-                if response == '0':
+                if response == "0":
                     return None
 
                 try:

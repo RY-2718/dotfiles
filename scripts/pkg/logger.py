@@ -4,29 +4,31 @@
 標準ライブラリのloggingを拡張してカラー出力に対応
 """
 
+from __future__ import annotations
+
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 
 class ColorCode:
     """ANSI カラーコード定数"""
-    RED = '\033[0;31m'
-    GREEN = '\033[0;32m'
-    YELLOW = '\033[1;33m'
-    BLUE = '\033[0;34m'
-    MAGENTA = '\033[0;35m'
-    CYAN = '\033[0;36m'
-    WHITE = '\033[1;37m'
-    RESET = '\033[0m'
+
+    RED = "\033[0;31m"
+    GREEN = "\033[0;32m"
+    YELLOW = "\033[1;33m"
+    BLUE = "\033[0;34m"
+    MAGENTA = "\033[0;35m"
+    CYAN = "\033[0;36m"
+    WHITE = "\033[1;37m"
+    RESET = "\033[0m"
 
     # 絵文字
-    INFO = 'ℹ'
-    SUCCESS = '✓'
-    WARNING = '⚠'
-    ERROR = '✗'
-    DEBUG = '🔍'
+    INFO = "ℹ"
+    SUCCESS = "✓"
+    WARNING = "⚠"
+    ERROR = "✗"
+    DEBUG = "🔍"
 
 
 class ColoredFormatter(logging.Formatter):
@@ -60,7 +62,7 @@ class ColoredFormatter(logging.Formatter):
 
         if self.use_color:
             color = self.colors.get(record.levelno, ColorCode.WHITE)
-            icon = self.icons.get(record.levelno, '')
+            icon = self.icons.get(record.levelno, "")
 
             # コンソール用（カラー + アイコン）
             console_msg = f"{color}{icon}{ColorCode.RESET} {record.getMessage()}"
@@ -77,27 +79,41 @@ class ColoredFormatter(logging.Formatter):
 
 
 class FileHandler(logging.FileHandler):
-    """ファイル出力専用ハンドラー（カラーコードを除去）"""
+    """ファイル出力専用ハンドラー（カラーコードを除去）
+
+    ColoredFormatterが生成した file_message をそのままファイルに出力する。
+    file_message は既に完全なフォーマット済み文字列なので、
+    標準のフォーマッターを使わずに直接書き込む。
+    """
 
     def emit(self, record: logging.LogRecord):
-        # ファイル用メッセージがあればそれを使用
-        if hasattr(record, 'file_message'):
-            original_msg = record.getMessage()
-            record.msg = record.file_message.split('] ', 2)[-1]  # タイムスタンプとレベルを除去
-            record.args = ()
+        try:
+            # file_message があればそれを使用（既に完全フォーマット済み）
+            if hasattr(record, "file_message"):
+                msg = record.file_message
+            else:
+                # なければ標準フォーマット
+                msg = self.format(record)
 
-        super().emit(record)
+            # ファイルに書き込み
+            stream = self.stream
+            stream.write(msg + self.terminator)
+            self.flush()
+        except Exception:
+            self.handleError(record)
 
 
 class ColoredLogger:
     """カラー対応ロガークラス"""
 
-    def __init__(self, name: str, log_file: Optional[Path] = None):
+    def __init__(self, name: str, log_file: Path | None = None):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
 
-        # 既存のハンドラーをクリア
-        self.logger.handlers.clear()
+        # 既存のハンドラーをクリア（ファイルを適切に閉じる）
+        for handler in self.logger.handlers[:]:
+            handler.close()
+            self.logger.removeHandler(handler)
 
         # コンソールハンドラー
         console_handler = logging.StreamHandler(sys.stdout)
@@ -106,7 +122,7 @@ class ColoredLogger:
 
         # ファイルハンドラー（指定された場合のみ）
         if log_file:
-            file_handler = FileHandler(log_file, mode='w', encoding='utf-8')
+            file_handler = FileHandler(log_file, mode="w", encoding="utf-8")
             file_handler.setFormatter(ColoredFormatter(use_color=False))
             self.logger.addHandler(file_handler)
 
@@ -145,8 +161,6 @@ class ColoredLogger:
         """エラーメッセージ"""
         self.logger.error(message)
 
-    def setLevel(self, level):
+    def set_level(self, level):
         """ログレベルを設定"""
         self.logger.setLevel(level)
-
-

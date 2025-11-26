@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import shutil
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Any
 
 
 @dataclass
@@ -20,7 +21,7 @@ class RollbackManager:
         archive: Path,
         *,
         restore_all: bool = False,
-        selected: Optional[Iterable[Path]] = None,
+        selected: Iterable[Path] | None = None,
     ) -> None:
         if not archive.exists():
             raise FileNotFoundError(f"バックアップが見つかりません: {archive}")

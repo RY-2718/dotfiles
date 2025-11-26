@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import os
-import shutil
 from dataclasses import dataclass
-from pathlib import Path
 
 from ..backup_store import BackupManager
 from ..logger import ColoredLogger
 from ..ui import UserInterface
-
 from .model import ActionType, Plan, PlanEntry
 
 
@@ -26,7 +23,9 @@ class ExecutionReport:
 class PlanExecutor:
     """Plan をもとにファイル操作を行う."""
 
-    def __init__(self, ui: UserInterface, logger: ColoredLogger, backup_manager: BackupManager) -> None:
+    def __init__(
+        self, ui: UserInterface, logger: ColoredLogger, backup_manager: BackupManager
+    ) -> None:
         self.ui = ui
         self.logger = logger
         self.backup_manager = backup_manager

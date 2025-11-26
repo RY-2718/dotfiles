@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
 
 
 class ActionType(Enum):
@@ -42,7 +42,7 @@ class PlanEntry:
     message: str = ""
     needs_confirmation: bool = False
     needs_backup: bool = False
-    blocked_reason: Optional[str] = None
+    blocked_reason: str | None = None
 
     def describe(self) -> str:
         """人間向けにシンプルな説明文を返す."""
@@ -58,9 +58,9 @@ class PlanEntry:
 class Plan:
     """インストール処理全体の計画. PlanEntry を集めたもの + いくつかのユーティリティメソッド."""
 
-    entries: List[PlanEntry] = field(default_factory=list)
+    entries: list[PlanEntry] = field(default_factory=list)
 
-    def summary(self) -> "PlanSummary":
+    def summary(self) -> PlanSummary:
         summary = PlanSummary()
         for entry in self.entries:
             summary.increment(entry.action)
@@ -75,12 +75,12 @@ class Plan:
 class PlanSummary:
     """Plan全体の統計情報. 各アクション種別ごとの件数を保持."""
 
-    counts: Dict[ActionType, int] = field(default_factory=dict)
+    counts: dict[ActionType, int] = field(default_factory=dict)
 
     def increment(self, action_type: ActionType) -> None:
         self.counts[action_type] = self.counts.get(action_type, 0) + 1
 
-    def format_lines(self) -> List[str]:
+    def format_lines(self) -> list[str]:
         if not self.counts:
             return ["処理対象がありません"]
         lines = ["処理予定件数:"]

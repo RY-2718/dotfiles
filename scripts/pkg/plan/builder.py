@@ -19,12 +19,16 @@ class PlanBuilder:
         source_dir = self.source_dir
         # source directory がないときはどうしようもない
         if not source_dir.exists():
-            return Plan(entries=[PlanEntry(
-                spec=InstallSpec(source_dir, Path("."), source_dir),
-                action=ActionType.ERROR,
-                message="source directory が存在しません",
-                blocked_reason="source directoryを作成してください",
-            )])
+            return Plan(
+                entries=[
+                    PlanEntry(
+                        spec=InstallSpec(source_dir, Path("."), source_dir),
+                        action=ActionType.ERROR,
+                        message="source directory が存在しません",
+                        blocked_reason="source directoryを作成してください",
+                    )
+                ]
+            )
 
         entries: list[PlanEntry] = []
 
@@ -35,11 +39,15 @@ class PlanBuilder:
             # 既にディレクトリが存在する場合はスキップ
             if dest_dir.exists() and dest_dir.is_dir():
                 continue
-            entries.append(self._plan_ensure_directory(InstallSpec(
-                source=directory,
-                relative_path=relative,
-                dest=dest_dir,
-            )))
+            entries.append(
+                self._plan_ensure_directory(
+                    InstallSpec(
+                        source=directory,
+                        relative_path=relative,
+                        dest=dest_dir,
+                    )
+                )
+            )
 
         for source in sorted(source_dir.rglob("*")):
             if source.is_dir():

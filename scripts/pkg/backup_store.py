@@ -6,7 +6,6 @@ import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
@@ -15,7 +14,7 @@ class BackupManager:
 
     rollbacks_root: Path
 
-    current_dir: Optional[Path] = None
+    current_dir: Path | None = None
 
     def start(self) -> Path:
         """新しいバックアップディレクトリを作成してパスを返す."""
