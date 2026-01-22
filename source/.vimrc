@@ -81,21 +81,18 @@ endif
 
 " === シンタックスハイライト ===
 syntax on
-
-" === 色設定（オプション） ===
-" ターミナルが256色対応なら有効化
-if &t_Co >= 256
-  set background=dark
-endif
+set notermguicolors
+" light にしたほうが見た目が良い
+set background=light
 
 " === 不可視文字の表示（オプション、好みで有効化） ===
-" set list
-" set listchars=tab:»-,trail:-,nbsp:%,eol:↲
+set list
+set listchars=tab:»-,trail:-,nbsp:%,eol:↲
 
 " === マウスサポート（Vim 8.0以降、好みで有効化） ===
-" if has('mouse')
-"   set mouse=a
-" endif
+if has('mouse')
+  set mouse=a
+endif
 
 " === ステータスラインのカスタマイズ（オプション） ===
 " ファイル名、行番号、列番号、ファイル形式を表示
