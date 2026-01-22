@@ -227,6 +227,9 @@ if command -v zinit >/dev/null 2>&1; then
     # 補完の再読み込み（zsh-completionsのため）
     zinit cdreplay -q
 
+    # pure が用いていない PROMPT を用いて表示をカスタマイズ
+    RPROMPT='%F{15}%*%f'
+
 else
     echo "Zinitがインストールされていません。高機能なzsh環境のために導入を推奨します。"
     echo ""
@@ -249,3 +252,4 @@ else
     echo "インストール後、新しいターミナルセッションを開始してください。"
     echo ""
 fi
+
