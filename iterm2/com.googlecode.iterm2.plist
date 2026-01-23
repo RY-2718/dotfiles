@@ -2419,10 +2419,7 @@
 				<real>0.99989360570907593</real>
 			</dict>
 			<key>Bound Hosts</key>
-			<array>
-				<string>r-yoshitani@qawiz*</string>
-				<string>r-yoshitani@lcetest*</string>
-			</array>
+			<array/>
 			<key>Character Encoding</key>
 			<integer>4</integer>
 			<key>Close Sessions On End</key>
