@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.pkg.logger import ColorCode, ColoredFormatter, ColoredLogger, FileHandler
+from scripts.install.pkg.logger import ColorCode, ColoredFormatter, ColoredLogger, FileHandler
 
 
 class TestColoredFormatter(unittest.TestCase):

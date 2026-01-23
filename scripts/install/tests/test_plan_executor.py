@@ -6,11 +6,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.pkg.backup_store import BackupManager
-from scripts.pkg.logger import ColoredLogger
-from scripts.pkg.plan.builder import PlanBuilder
-from scripts.pkg.plan.executor import PlanExecutor
-from scripts.pkg.ui import UserInterface
+from scripts.install.pkg.backup_store import BackupManager
+from scripts.install.pkg.logger import ColoredLogger
+from scripts.install.pkg.plan.builder import PlanBuilder
+from scripts.install.pkg.plan.executor import PlanExecutor
+from scripts.install.pkg.ui import UserInterface
 
 
 class TestPlanExecutorDryRun(unittest.TestCase):

@@ -15,11 +15,11 @@ help:
 
 # テスト実行
 test:
-	@python3 -m unittest discover -s scripts/tests
+	@python3 -m unittest discover -s scripts/install/tests
 
 # 詳細表示でテスト実行
 test-v:
-	@python3 -m unittest discover -s scripts/tests -v
+	@python3 -m unittest discover -s scripts/install/tests -v
 
 # dotfilesインストール
 install:

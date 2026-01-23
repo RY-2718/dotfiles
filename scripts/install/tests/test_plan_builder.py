@@ -6,8 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.pkg.plan.builder import PlanBuilder
-from scripts.pkg.plan.model import ActionType
+from scripts.install.pkg.plan.builder import PlanBuilder
+from scripts.install.pkg.plan.model import ActionType
 
 
 class TestPlanBuilder(unittest.TestCase):

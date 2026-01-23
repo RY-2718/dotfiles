@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.pkg.rollback_manager import RollbackManager
+from scripts.install.pkg.rollback_manager import RollbackManager
 
 
 class MockUI:
