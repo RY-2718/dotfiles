@@ -27,13 +27,13 @@ filetype plugin indent on
 augroup FileTypeIndent
   autocmd!
   " Makefileはタブ必須
-  autocmd FileType make setlocal noexpandtab tabstop=8 shiftwidth=8
+  autocmd FileType make setlocal noexpandtab tabstop=4 shiftwidth=4
   
   " Web系は2スペース
   autocmd FileType javascript,typescript,json,yaml,html,css setlocal tabstop=2 shiftwidth=2 softtabstop=2
   
-  " シェルスクリプトも2スペース
-  autocmd FileType sh,bash,zsh setlocal tabstop=2 shiftwidth=2 softtabstop=2
+  " シェルスクリプトは4スペース
+  autocmd FileType sh,bash,zsh setlocal tabstop=4 shiftwidth=4 softtabstop=4
   
   " Goはタブ
   autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4

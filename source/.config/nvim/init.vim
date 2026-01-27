@@ -26,7 +26,7 @@ augroup FileTypeIndent
   autocmd!
   autocmd FileType make setlocal noexpandtab tabstop=4 shiftwidth=4
   autocmd FileType javascript,typescript,json,yaml,html,css setlocal tabstop=2 shiftwidth=2 softtabstop=2
-  autocmd FileType sh,bash,zsh setlocal tabstop=2 shiftwidth=2 softtabstop=2
+  autocmd FileType sh,bash,zsh setlocal tabstop=4 shiftwidth=4 softtabstop=4
   autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
   autocmd FileType python setlocal tabstop=4 shiftwidth=4 softtabstop=4
 augroup END

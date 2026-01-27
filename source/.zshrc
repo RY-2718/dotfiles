@@ -253,3 +253,11 @@ else
     echo ""
 fi
 
+# Neovim があったら使う
+if command -v nvim &> /dev/null; then
+    alias vim='nvim'
+    alias vi='nvim'
+    export EDITOR='nvim'
+    export VISUAL='nvim'
+fi
+
