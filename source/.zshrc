@@ -261,3 +261,8 @@ if command -v nvim &> /dev/null; then
     export VISUAL='nvim'
 fi
 
+# VSCodeの統合シェル用設定
+if [[ "$TERM_PROGRAM" == "vscode" ]]; then
+    PROMPT='%~ > '
+    RPROMPT=''
+fi
