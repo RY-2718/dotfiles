@@ -34,6 +34,10 @@ elif type ghq >/dev/null 2>&1; then
     alias g='echo "fzfがないため、ghqのfuzzy検索が利用できません。手動で移動してください: cd \$(ghq root)/<repo-name>"'
 fi
 
+if type brew >/dev/null 2>&1; then
+    alias brew-stale="brew outdated | grep -Fx -f <(brew leaves)"
+fi
+
 
 # Source local file.
 if [[ -s "$HOME/.aliases_local" ]]; then
