@@ -264,3 +264,11 @@ if [[ "$TERM_PROGRAM" == "vscode" ]]; then
     PROMPT='%~ > '
     RPROMPT=''
 fi
+
+# Just に移行しよう
+make() {
+  if [[ -f "Justfile" || -f "justfile" ]]; then
+    echo -e "\033[33m⚠ このディレクトリには Justfile があります。just を使いましょう。\033[0m"
+  fi
+  command make "$@"
+}
