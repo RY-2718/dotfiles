@@ -192,6 +192,8 @@ zstyle ':completion:*:kill:*' force-list always
 #   - zsh-completions: 追加の補完定義
 #   - zsh-history-substring-search: 部分文字列での履歴検索 (↑↓キー)
 #   - pure: ミニマルなプロンプトテーマ
+#     - gcloud がインストールされていればアクティブプロジェクトを右側に表示する
+#       (pure 標準の prompt_pure_precustom フックを利用した独自拡張)
 #
 # 使い方:
 #   - →キー: 自動提案を受け入れ
@@ -214,6 +216,31 @@ if command -v zinit >/dev/null 2>&1; then
     # Pureプロンプトテーマの読み込み
     zinit ice pick"async.zsh" src"pure.zsh" # with zsh-async library that's bundled with it.
     zinit light sindresorhus/pure
+
+    # gcloud のアクティブプロジェクトをプロンプトに表示
+    # `gcloud config get-value project` は Python 起動を伴い数百msかかるため使わず、
+    # configuration ファイルを直接読んでサブプロセスコストを避けている。
+    if command -v gcloud >/dev/null 2>&1; then
+        autoload -Uz add-zsh-hook
+
+        _gcloud_prompt_project=
+        _gcloud_prompt_update() {
+            local active_config config_file
+            active_config=$(<~/.config/gcloud/active_config) 2>/dev/null
+            if [[ -z "$active_config" ]]; then
+                _gcloud_prompt_project=
+                return
+            fi
+            config_file=~/.config/gcloud/configurations/config_${active_config}
+            _gcloud_prompt_project=$(awk -F'= *' '/^project/{print $2}' "$config_file" 2>/dev/null)
+        }
+        add-zsh-hook precmd _gcloud_prompt_update
+
+        prompt_pure_precustom() {
+            [[ -n "$_gcloud_prompt_project" ]] && psvar[23]="☁ $_gcloud_prompt_project"
+        }
+        zstyle :prompt:pure:custom:suffix color 245
+    fi
 
     # zsh-autosuggestions の設定
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=240'              # 薄いグレーで表示
